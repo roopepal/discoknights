@@ -3,7 +3,9 @@ from character import Character
 from squaretype import SquareType
 from coordinates import Coordinates
 import direction
+from config_reader import ConfigReader
 
+'''
 map_input = [["w","w","w","w","w","w","w","w","w","w"],
              ["w","r","g","g","g","g","g","g","g","w"],
              ["w","r","r","r","r","g","g","g","g","w"],
@@ -52,3 +54,14 @@ if success: print("Successful.")
 print("Character B hits character A.")
 charB.use_action(1, Coordinates(4,4))
 
+'''
+
+f = open('game_config', 'r')
+r = ConfigReader()
+config = r.read_config(f)
+
+f.close()
+
+m = r.build_from_config(config)
+
+m.print_simple()

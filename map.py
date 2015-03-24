@@ -8,28 +8,22 @@ class Map(object):
     This class defines the map object that contains the game world.
     '''
     
-    def __init__(self, width, height):
+    def __init__(self):
+        self.characters = []
+        self.squaretypes = {}
+        self.turn_controller = Turn(self)
         
-        # Initiate the map with empty place holders for squares, characters, and squaretypes
+    def build_map(self, height, width, squares_input):
+        self.height = height
+        self.width = width
+                
         self.squares = height * [None]
         for y in range(height): 
             self.squares[y] = width * [None]
         
-        self.width = width
-        self.height = height
-        self.characters = []
-        self.squaretypes = {}
-        
-        self.turn_controller = Turn(self)
-        
-        
-    def build_map(self, squares_input):
-        height = self.get_height()
-        width = self.get_width()
-        
         for y in range(height):
             for x in range(width):
-                # If square type is properly configured
+                # If square type is properly configured                
                 if squares_input[y][x] in self.squaretypes.keys():
                     self.squares[y][x] = Square(Coordinates(x,y), self.squaretypes[squares_input[y][x]])
                     
@@ -54,8 +48,8 @@ class Map(object):
         return self.squaretypes
     
     def add_squaretype(self, squaretype):
-        if not squaretype.get_name()[0] in self.squaretypes:
-            self.squaretypes[squaretype.get_name()[0]] = squaretype
+        if not squaretype.short in self.squaretypes:
+            self.squaretypes[squaretype.short] = squaretype
       
     def add_character(self, character, coordinates, facing):
         if self.get_square_at(coordinates).is_empty():

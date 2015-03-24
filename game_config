@@ -40,3 +40,9 @@ name: A
 max_health: 100
 move_range: 2
 sprite: ../graphics/hero1.gif
+
+#Character
+name: A
+max_health: 100
+move_range: 2
+sprite: ../graphics/hero1.gif

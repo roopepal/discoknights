@@ -3,16 +3,21 @@ class SquareType(object):
     This class defines the types of squares on the map.
     '''
     
-    def __init__(self, name, walkable):
+    def __init__(self, name, short, walkable, sprite):
         '''
         Creates a new square type.
         
         @param self.name: (String) The name of the square type.
+        @param self.short: (String) A one-letter short name for the square type.
         @param self.walkable: (Boolean) Whether a character walk into a square of this type.
+        @param self.sprite: (String) A path to the sprite file.
+        
         '''
         
         self.name = name
+        self.short = short
         self.walkable = walkable
+        self.sprite = sprite
     
     def get_name(self):
         return self.name
