@@ -3,7 +3,7 @@ from squaretype import SquareType
 
 class ConfigReader(object):
     
-    def read_config(self, input):
+    def read_map_config(self, input):
         
         self.config = []
         self.current_line = ''
@@ -75,7 +75,7 @@ class ConfigReader(object):
         #except:
             #print("There was an error.")
     
-    def build_from_config(self, config):
+    def map_from_config(self, config):
         
         m = Map()
         

@@ -61,20 +61,13 @@ def main():
     grass_img = pygame.image.load('../graphics/grass.gif')
     hero1_img = pygame.image.load('../graphics/hero1.gif')
     selected_img = pygame.image.load('../graphics/selected.png')
-    '''
-    m = Map(10,10)
-    m.add_squaretype( SquareType("water", False) )
-    m.add_squaretype( SquareType("grass", True) )
-    m.add_squaretype( SquareType("road", True) )
-    m.build_map(map_input)
-    '''
     
     f = open('game_config', 'r')
     r = ConfigReader()
     config = r.read_config(f)
     f.close()
 
-    m = r.build_from_config(config)
+    m = r.map_from_config(config)
     
     map_w = m.get_width() * tile_w
     map_offset_x = map_w / 2 - tile_w / 2
