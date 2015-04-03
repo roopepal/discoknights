@@ -1,0 +1,5 @@
+DISCO KNIGHTS Config
+
+#UI elements
+character_info: ../graphics/char_info.gif
+character_info_has_turn: ../graphics/char_info_has_turn.gif
