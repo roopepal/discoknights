@@ -26,6 +26,12 @@ class Square(object):
     
     def set_character(self, character):
         self.character = character
+
+    def has_character(self):
+        if self.character == None:
+            return False
+        else:
+            return True
     
     def is_empty(self):
         if self.character == None:

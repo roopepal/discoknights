@@ -2,14 +2,165 @@ DISCO KNIGHTS Config
 
 // Lines that start with two forward slashes are recognized as comments.
 
+
+// Player's characters
+
 #Character
 name: A
 max_health: 100
-move_range: 2
-sprite: ../graphics/hero1.gif
+move_range: 3
+x: 3
+y: 3
+facing: right
+is_ai: false
+stand_sprites: {
+	up: ../graphics/hero1_up.gif
+	down: ../graphics/hero1_down.gif
+	left: ../graphics/hero1_left.gif
+	right: ../graphics/hero1_right.gif
+}
+walk_sprites: {
+	up: ../graphics/hero1_walk1_up.gif, ../graphics/hero1_walk2_up.gif, ../graphics/hero1_walk3_up.gif, ../graphics/hero1_walk4_up.gif 
+	down: ../graphics/hero1_walk1_down.gif, ../graphics/hero1_walk2_down.gif, ../graphics/hero1_walk3_down.gif, ../graphics/hero1_walk4_down.gif
+	left: ../graphics/hero1_walk1_left.gif, ../graphics/hero1_walk2_left.gif, ../graphics/hero1_walk3_left.gif, ../graphics/hero1_walk4_left.gif
+	right: ../graphics/hero1_walk1_right.gif, ../graphics/hero1_walk2_right.gif, ../graphics/hero1_walk3_right.gif, ../graphics/hero1_walk4_right.gif
+}
+
+#Action
+character: A
+type: damage
+strength: 15
+max_range: 1
+name: Hit  
+
+#Action
+character: A
+type: damage
+strength: 5
+max_range: 1
+name: Poke
+
+#Action
+character: A
+type: stun
+strength: 1
+max_range: 1
+name: Stun
+
+
 
 #Character
 name: B
 max_health: 100
-move_range: 2
-sprite: ../graphics/hero1.gif
+move_range: 3
+x: 3
+y: 4
+facing: right
+is_ai: false
+stand_sprites: {
+	right: ../graphics/hero2_right.gif
+	left: ../graphics/hero2_right.gif
+	up: ../graphics/hero2_right.gif
+	down: ../graphics/hero2_right.gif
+}
+
+#Action
+character: B
+type: damage
+strength: 10
+max_range: 2
+name: Spell  
+
+#Action
+character: B
+type: heal
+strength: 10
+max_range: 2
+name: Heal
+
+
+
+#Character
+name: C
+max_health: 80
+move_range: 3
+x: 3
+y: 5
+facing: right
+is_ai: false
+stand_sprites: {
+	right: ../graphics/hero3_right.gif
+	left: ../graphics/hero3_right.gif
+	up: ../graphics/hero3_right.gif
+	down: ../graphics/hero3_right.gif
+}
+
+#Action
+character: C
+type: damage
+strength: 15
+max_range: 1
+name: Hit  
+
+#Action
+character: C
+type: damage
+strength: 10
+max_range: 2
+name: Shoot
+
+
+
+
+// AI characters:
+
+#Character
+name: D
+max_health: 100
+move_range: 3
+x: 5
+y: 3
+facing: left
+is_ai: true
+stand_sprites: {
+	up: ../graphics/ai1_up.gif
+	down: ../graphics/ai1_down.gif
+	left: ../graphics/ai1_left.gif
+	right: ../graphics/ai1_right.gif
+}
+
+
+
+#Character
+name: E
+max_health: 100
+move_range: 3
+x: 5
+y: 4
+facing: left
+is_ai: true
+stand_sprites: {
+	up: ../graphics/ai1_up.gif
+	down: ../graphics/ai1_down.gif
+	left: ../graphics/ai1_left.gif
+	right: ../graphics/ai1_right.gif
+}
+
+
+
+#Character
+name: F
+max_health: 100
+move_range: 3
+x: 5
+y: 5
+facing: left
+is_ai: true
+stand_sprites: {
+	up: ../graphics/ai1_up.gif
+	down: ../graphics/ai1_down.gif
+	left: ../graphics/ai1_left.gif
+	right: ../graphics/ai1_right.gif
+}
+
+

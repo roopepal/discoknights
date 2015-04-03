@@ -2,6 +2,7 @@ class Action(object):
     
     DAMAGE = 1
     HEAL = 2
+    STUN = 3
     
     def __init__(self, character, action_type, strength, action_range, description):
         self.type = action_type
@@ -31,10 +32,15 @@ class Action(object):
         
         if not target_character:
             print("Missed!")
+            return "Missed!"
         else:
             if self.type == Action.DAMAGE:
                 target_character.damage(self.strength)
             elif self.type == Action.HEAL:
                 target_character.heal(self.strength)
+            elif self.type == Action.STUN:
+                target_character.stun(self.strength)
+                print("Stunned {:} for {:} turns.".format(target_character, self.strength))
+            return "Used '" + self.description + "' on " + self.character.map.get_square_at(target_location).character.name
         
         

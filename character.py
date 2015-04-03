@@ -5,10 +5,11 @@ from queue import Queue
 
 class Character(object):
     '''
-    This class defines a game character.
+    Defines a game character.
     '''
     
-    def __init__(self, name, max_health, move_range, sprite_path):
+    def __init__(self, name, max_health, move_range, is_ai):
+        '''Constructs a new game character.'''
         self.name = name
         self.location = None
         self.facing = None
@@ -16,8 +17,12 @@ class Character(object):
         self.max_health = max_health
         self.health = max_health
         self.range = move_range
-        self.sprite_path = sprite_path
+        self.stand_sprites = {}
+        self.walk_sprites = {}
         self.actions = []
+        self.stunned = 0
+        self.ai = is_ai
+        self.has_moved = False
 
     def get_all(self): #DEBUG METHOD
         ret = self.get_name() + str(self.get_location()) + str(self.get_facing())
@@ -39,6 +44,7 @@ class Character(object):
         return self.map
     
     def added_to_map(self, current_map, location, facing):
+        '''Takes care of updating the character attributes when the character is added to a map.'''
         self.map = current_map
         self.location = location
         self.facing = facing
@@ -50,11 +56,18 @@ class Character(object):
         return self.health    
     
     def heal(self, amount):
+        '''Increases the character's health points by the given amount.'''
         self.health += amount
     
     def damage(self, amount):
+        '''Decreases the character's health points by the given amount'''
         self.health -= amount
-        
+    
+    def stun(self, turns):
+        '''Stuns the character for the given amount of turns.'''
+        self.stunned += turns
+        print(self.name, self.stunned)
+    
     def get_range(self):
         return self.range
     
@@ -65,27 +78,43 @@ class Character(object):
         return self.actions
     
     def add_action(self, action_type, strength, action_range, description):
+        '''Adds an action that the character can perform.'''
         self.actions.append( Action(self, action_type, strength, action_range, description) )
         
     def use_action(self, action_number, target_location):
-        self.actions[action_number-1].perform(target_location)
-        self.end_turn()
+        '''Performs the given action at the target location.'''
+        if not self.has_turn():
+            print("It's not {:}'s turn.".format(self.get_name()))           # Debugging print
+            return False
+        elif self.stunned > 0:
+            print("{:} is stunned.".format(self.name))
+            return False
+        
+        else:
+            self.actions[action_number-1].perform(target_location)
+            self.end_turn()
+            return True
     
     def turn_to_direction(self, direction):
+        '''Changes the direction the character is facing.'''
         self.facing = direction
 
     def has_turn(self):
-        return self.map.get_turn_controller().get_current_character() == self
+        '''Returns True if it is the character's turn.'''
+        return self.map.turn_controller.current_character == self
     
     def end_turn(self):
+        '''Gives the turn to the next character.'''
+        self.has_moved = False
         return self.map.get_turn_controller().next()
     
-    def within_range(self, move_range):
+    def within_range(self, move_range, for_action=False):
         '''
-        Returns a list of the squares that are within a range from the character.
+        Returns a list of the squares that are within the given range from the character.
+        Based on the BFS algorithm.
+        
         Also sets the range_counts for squares to be used with the get_shortest_path() method.
         '''      
-        
         within_range = []
         s = self.get_location()
         q = Queue()
@@ -106,13 +135,16 @@ class Character(object):
             for v in n:
                 if not self.map.get_square_at(v) == False:
                     square = self.map.get_square_at(v)
-                    if square.visited == False and square.get_type().is_walkable() and square.is_empty():
+                    if square.visited == False and square.get_type().is_walkable():
                         square.range_count = self.map.get_square_at(u).range_count + 1
                         if square.range_count <= move_range:
                             square.visited = True
                             q.put(v)
                             if not square in within_range:
-                                within_range.append(square)
+                                if for_action:
+                                    within_range.append(square)
+                                elif square.is_empty():
+                                    within_range.append(square)
 
             self.map.get_square_at(u).finished = True
 
@@ -120,7 +152,9 @@ class Character(object):
             
     def get_shortest_path(self, location):
         '''
-        Assumes that the method within_range() has been run right before this so that the range_counts in squares are correct.
+        Gets the shortest path from the character to the given location.
+		
+		Assumes that the method within_range() has been run right before this so that the range_counts in squares are correct.
         
         In this game, there is no such scenario where this method would be needed without first calling the within_range() method.
         This saves time since the O(MN) method does not need to be repeated.
@@ -147,7 +181,10 @@ class Character(object):
                     break    
     
     def move_forward(self):
-        ''' A helper method for move_to_coordinates() '''
+        '''
+		Moves one step to the direction the character is facing.
+		A helper method for move_to_coordinates().
+		'''
         target_location = self.get_location().get_neighbor(self.get_facing())
         target_square = self.map.get_square_at(target_location)
         
@@ -160,15 +197,22 @@ class Character(object):
             return False
         
     def move_to_direction(self, direction):
-        ''' A helper method for move_to_coordinates() '''
+        '''
+		Moves one step to the given direction.
+		A helper method for move_to_coordinates().
+		'''
         self.turn_to_direction(direction)
         return self.move_forward()    
         
     def move_to_coordinates(self, target):
+        '''
+        Moves the character to the given target coordinates, if the coordinates are within the move range of the character.
+        '''
         if not self.has_turn():
             print("It's not {:}'s turn.".format(self.get_name()))           # Debugging print
             return False
-        
+        elif self.stunned:
+            print("{:} is stunned".format(self.name))
         ret = False
         
         squares_within_range = self.within_range(self.range)
@@ -176,9 +220,7 @@ class Character(object):
         if self.map.get_square_at(target) in squares_within_range:
             shortest_path = self.get_shortest_path(target)
             for step in shortest_path:
-                
-                #print(step)                                                            # Debugging print
-                
+                                
                 target_x = step.get_x()
                 target_y = step.get_y()
                 self_x = self.get_location().get_x()
@@ -192,8 +234,8 @@ class Character(object):
                     ret = self.move_to_direction(direction.DOWN)
                 if ( target_x - self_x == -1 ) and ( target_y - self_y == 0 ):
                     ret = self.move_to_direction(direction.LEFT)
-        
-                #self.map.print_simple()                                                 # Debugging print
+            
+            self.has_moved = True
             return ret
         
         elif not self.map.get_square_at(target) in squares_within_range:

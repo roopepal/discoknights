@@ -8,7 +8,6 @@ class Turn(object):
         
         self.current_has_moved = False
         
-        
     def add_character(self, character):
         self.characters.append(character)
         
@@ -38,13 +37,13 @@ class Turn(object):
         else:
             self.current_character = self.characters[0]
         
-        
-        self.current_has_moved = False
-        
-        ret = "It's " + self.current_character.get_name() + "'s turn next."
-        #print(ret)                                                                  # Debugging print
-        
-        return ret
-        
-        
-        
+        if self.current_character.stunned > 0:
+            # set message variable here also                                #TODO!
+            self.current_character.stunned -= 1
+            self.next()
+        else:    
+            self.current_has_moved = False
+            ret = "Move or choose an action."
+    
+            return ret
+    
