@@ -152,7 +152,8 @@ class ConfigReader(object):
                 if 'walk_sprites' in item:
                     new_character.walk_sprites = item["walk_sprites"]
                 
-                m.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
+                if m.contains_coordinates(Coordinates(int(item["x"]), int(item["y"]))):
+                    m.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
                 
                 for item2 in character_config:
                     if item2["id"].lower() == "action" and item2["character"] == new_character.name:

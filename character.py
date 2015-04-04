@@ -130,24 +130,35 @@ class Character(object):
         q.put(s)
         
         while not q.empty():
+            #get next square from queue
             u = q.get()
+            #get neighboring squares
             n = u.get_neighbors()
             for v in n:
+                #if there is a square at v
                 if not self.map.get_square_at(v) == False:
                     square = self.map.get_square_at(v)
+                    #if the square hasn't been visited and is of a walkable type and empty
                     if square.visited == False and square.get_type().is_walkable():
+                        #set range count from starting point
                         square.range_count = self.map.get_square_at(u).range_count + 1
+                        #if square is still within range, put in queue
                         if square.range_count <= move_range:
                             square.visited = True
-                            q.put(v)
-                            if not square in within_range:
-                                if for_action:
+                            #if for action, does not need to be empty
+                            if for_action:
+                                q.put(v)
+                                if not square in within_range:
                                     within_range.append(square)
-                                elif square.is_empty():
+                            #if for movement, needs to be empty
+                            elif square.is_empty():
+                                q.put(v)
+                                if not square in within_range:
                                     within_range.append(square)
 
             self.map.get_square_at(u).finished = True
-
+        
+        print("Calculated range.")
         return within_range
             
     def get_shortest_path(self, location):

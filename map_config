@@ -20,21 +20,17 @@ walkable: true
 sprite: ../graphics/grass.png
 
 #Map
-width: 14
-height: 14
+width: 10
+height: 10
 squares: {
-w w w w w w w w w w w w w w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w g g g g g g g g g g g g w
-w w w w w w w w w w w w w w
+w w w w w w w w w w
+w g g g g g g g g w
+w g g g g g g g g w
+w g g g g g g g g w
+w g g g g g g g g w
+w g g g g g g g g w
+w g g g g g g g g w
+w g g g g g g g g w
+w g g g g g g g g w
+w w w w w w w w w w
 }

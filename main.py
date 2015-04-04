@@ -1,26 +1,34 @@
-import pygame, sys
+import cProfile, pstats, io
+pr = cProfile.Profile()
+pr.enable()
+
+
 from action import Action
-from config_reader import ConfigReader
-from map import Map
 from character import Character
-from squaretype import SquareType
+from config_reader import ConfigReader
 from coordinates import Coordinates
 import direction
-import json
+from isometric import *
+from map import Map
+import pygame, sys
+from squaretype import SquareType
 import ui
 
 def main():
     
     ''' Helper methods defined '''
     
-    def map_to_screen(x,y):
-        screen_x = (x - y) * (tile_w / 2) + map_offset_x
-        screen_y = (x + y) * (tile_h / 2) + map_offset_y
+    tile_w = 64
+    tile_h = 32
+
+    def map_to_screen(x,y, offset_x=0, offset_y=0):
+        screen_x = (x - y) * (tile_w / 2) + offset_x
+        screen_y = (x + y) * (tile_h / 2) + offset_y
         return screen_x, screen_y
-        
-    def screen_to_map(x,y):
-        x -= ( map_offset_x + tile_w / 2 )
-        y -= map_offset_y
+    
+    def screen_to_map(x,y, offset_x=0, offset_y=0):
+        x -= ( offset_x + tile_w / 2 )
+        y -= offset_y
         x = x / 2
         map_x = (y + x)/(tile_h)
         map_y = (y - x)/(tile_h)
@@ -29,7 +37,7 @@ def main():
         if map_y < 0:
             map_y -= 1    
         return int(map_x), int(map_y)
-    
+
     def square_clicked(screen_x, screen_y):
         x = screen_x
         y = screen_y
@@ -37,24 +45,23 @@ def main():
         map_y = ( y / (tile_h / 2) - (y / (tile_w / 2)) ) / 2
         return (map_x, map_y)
     
-    def render_squares():
-        
-        screen.fill((255,255,255))
-        
-        for x in range(m.get_width()):
-            for y in range(m.get_height()):
+    def render_squares(surface):        
+        for x in range(m.width):
+            for y in range(m.height):
                 square = m.get_square_at(Coordinates(x,y))
                 screen_x, screen_y = map_to_screen(x,y)
-      
+                
+                print("{:}, {:} to {:}, {:}".format(x,y,screen_x, screen_y))
+                
                 if square.get_type() == m.get_squaretypes()["g"]:
-                    screen.blit(grass_img, (screen_x, screen_y))
+                    surface.blit(grass_img, (screen_x, screen_y))
                 elif square.get_type() == m.get_squaretypes()["w"]:
-                    screen.blit(water_img, (screen_x, screen_y))
+                    surface.blit(water_img, (screen_x, screen_y))
     
     def render_range():
         for sq in within_range:
-            sq_mx, sq_my = sq.get_location().get_x(), sq.get_location().get_y()
-            sq_sx, sq_sy = map_to_screen(sq_mx, sq_my)
+            sq_mx, sq_my = sq.location.x, sq.location.y
+            sq_sx, sq_sy = map_to_screen(sq_mx, sq_my, map_offset_x, map_offset_y)
             if selected_action:
                 if selected_action.type == Action.HEAL:
                     screen.blit( heal_target_img, (sq_sx, sq_sy) )
@@ -63,24 +70,13 @@ def main():
             else:
                 screen.blit( selected_img, (sq_sx, sq_sy) )
     
-    def render_selected_squares():
-        if selected_square_inside_map:
-            if selected_character and selected_character.has_turn():
-                for sq in within_range:
-                    sq_mx, sq_my = sq.get_location().get_x(), sq.get_location().get_y()
-                    sq_sx, sq_sy = map_to_screen(sq_mx, sq_my)
-                    if selected_action:
-                        screen.blit( action_target_img, (sq_sx, sq_sy) )
-                    else:
-                        screen.blit( selected_img, (sq_sx, sq_sy) )
-    
     def render_all_characters(excluding=[]):
         # For each square on the map, check if there's a character and if yes, draw it.
         for x in range(m.get_width()):
             for y in range(m.get_height()):
                 square = m.get_square_at(Coordinates(x,y))
                 # Translate coordinates
-                screen_x, screen_y = map_to_screen(x,y)
+                screen_x, screen_y = map_to_screen(x,y, map_offset_x, map_offset_y)
                 
                 if square.has_character() and not square.character in excluding:
                     if square.character.facing == direction.UP: facing = "up"
@@ -100,13 +96,13 @@ def main():
             for sprite in character.stand_sprites:
                 if character.stand_sprites[sprite] not in sprites:
                     print("Loading sprite '{:}'".format(character.stand_sprites[sprite]))
-                    sprites[character.stand_sprites[sprite]] = pygame.image.load(character.stand_sprites[sprite])
+                    sprites[character.stand_sprites[sprite]] = pygame.image.load(character.stand_sprites[sprite]).convert_alpha()
                 
             for sprite_list in character.walk_sprites:
                 for sprite in character.walk_sprites[sprite_list]:
                     if sprite not in sprites:
                         print("Loading sprite '{:}'".format(sprite))
-                        sprites[sprite] = pygame.image.load(sprite)
+                        sprites[sprite] = pygame.image.load(sprite).convert_alpha()
         
         return sprites
         
@@ -126,11 +122,11 @@ def main():
         for character in m.characters:
             
             if character.has_turn():
-                char_info = pygame.image.load(char_info_sprites[1])
+                char_info = pygame.image.load(char_info_sprites[1]).convert_alpha()
             else:
-                char_info = pygame.image.load(char_info_sprites[0])
+                char_info = pygame.image.load(char_info_sprites[0]).convert_alpha()
             
-            head_image = pygame.image.load(character.stand_sprites["right"])
+            head_image = pygame.image.load(character.stand_sprites["right"]).convert_alpha()
             head_image.set_clip(pygame.Rect(0,0, 20,20))
             
             char_info.blit(head_image, (5,5), (8,5,24,24))
@@ -162,13 +158,13 @@ def main():
     def render_bottom_menu():
         bottom_menu_sprites = ["../graphics/actions_menu.gif", "../graphics/bottom_bar.gif"]
         
-        # blit background bar
-        bottom_bar = pygame.image.load(bottom_menu_sprites[1])
-        for i in range(screen_w // 4):
-            screen.blit(bottom_bar, (i*4, screen_h-28))
+        #blit background bar
+        #bottom_bar = pygame.image.load(bottom_menu_sprites[1]).convert_alpha()
+        #for i in range(screen_w // 4):
+        #    screen.blit(bottom_bar, (i*4, screen_h-28))
         
         # blit actions menu
-        actions_menu = pygame.image.load(bottom_menu_sprites[0])
+        actions_menu = pygame.image.load(bottom_menu_sprites[0]).convert_alpha()
         screen.blit(actions_menu, (7, screen_h - 103))
         
         # blit end button and text
@@ -246,7 +242,7 @@ def main():
     def blit_alpha(target, source, location, opacity):
         x = location[0]
         y = location[1]
-        temp = pygame.Surface((source.get_width(), source.get_height())).convert()
+        temp = pygame.Surface((source.get_width(), source.get_height())).convert_alpha()
         temp.blit(target, (-x, -y))
         temp.blit(source, (0, 0))
         temp.set_alpha(opacity)        
@@ -254,22 +250,29 @@ def main():
     
     
     ''' Game starts '''
-    
     pygame.init()
+    
+    screen_w = 640 
+    screen_h = 480
+    
+    '''
+    Set scaling here. For the best result, use 1 or 2.
+    '''
+    #scaling = 1
+    
+    #screen = pygame.Surface((screen_w, screen_h))
+    #window = pygame.display.set_mode((screen_w * scaling, screen_h * scaling))
+    screen = pygame.display.set_mode((screen_w, screen_h))
     
     font = pygame.font.Font("../coders_crux.ttf", 14)
     med_font = pygame.font.Font("../coders_crux.ttf", 16)
     
-    screen_w = 640
-    screen_h = 480
-    tile_w = 64
-    tile_h = 32
-    water_img = pygame.image.load('../graphics/water.png')
-    grass_img = pygame.image.load('../graphics/grass.gif')
-    selected_img = pygame.image.load('../graphics/selected.gif')
-    action_target_img = pygame.image.load('../graphics/action_selected.gif')
-    heal_target_img = pygame.image.load('../graphics/heal_selected.gif')
-        
+    water_img = pygame.image.load('../graphics/water.png').convert_alpha()
+    grass_img = pygame.image.load('../graphics/grass.gif').convert_alpha()
+    selected_img = pygame.image.load('../graphics/selected.gif').convert_alpha()
+    action_target_img = pygame.image.load('../graphics/action_selected.gif').convert_alpha()
+    heal_target_img = pygame.image.load('../graphics/heal_selected.gif').convert_alpha()
+    
     r = ConfigReader()
     
     f = open('map_config', 'r')
@@ -284,27 +287,21 @@ def main():
     
     sprites = load_sprites()
     
-    map_w = m.get_width() * tile_w
+    map_w = m.width * tile_w
     map_offset_x = map_w / 2 - tile_w / 2
     map_offset_y = 64
     character_offset_x = 13
     character_offset_y = -30
     
-    '''
-    Set scaling here. For the best result, use 1 or 2.
-    '''
-    #scaling = 1
-    
-    #screen = pygame.Surface((screen_w, screen_h))
-    #window = pygame.display.set_mode((screen_w * scaling, screen_h * scaling))
-    screen = pygame.display.set_mode((screen_w, screen_h))
+    map_surface = pygame.Surface(( (m.width + m.height)*tile_w/2, (m.width + m.height)*(tile_h+8)/2))
+    render_squares(map_surface)
     
     done = False
     selected_square_inside_map = False
-    selected_character = None
+    selected_character = m.turn_controller.current_character
     selected_action = None
     mouse_pos = None
-    within_range = []   
+    within_range = selected_character.within_range(selected_character.range)   
     text_to_display = None
     did_update_already = False
     did_move_already = False
@@ -312,27 +309,44 @@ def main():
     effect_text = None
     
     clock = pygame.time.Clock()
-    fps = 30
+    fps = 90
         
     while not done:
         clock.tick(fps)
         
         did_update_already = False
-        selected_character = m.turn_controller.current_character
-        square = m.get_square_at(selected_character.location)
-        if not selected_action and not selected_character.has_moved:
-            within_range = selected_character.within_range(selected_character.range)
-        elif selected_action:
-            within_range = selected_character.within_range(selected_action.range, for_action = True)
+        
             
-        render_squares()                
+        screen.blit(map_surface, (map_offset_x, map_offset_y))                
         render_range()
         render_all_characters()
         
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                
+                pr.disable()
+                
+                s = io.StringIO()
+                sortby = 'cumulative'
+                ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+                
+                ps.strip_dirs().sort_stats('cumulative').print_stats()
+                print(s.getvalue())
+                
                 done = True
             
+            # move map with arrow keys
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LEFT]:
+                map_offset_x -= 4
+            if keys[pygame.K_RIGHT]:
+                map_offset_x += 4
+            if keys[pygame.K_UP]:
+                map_offset_y -= 4
+            if keys[pygame.K_DOWN]:
+                map_offset_y += 4
+                    
             # get mouse position and convert to cartesian coordinates
             mouse_pos = pygame.mouse.get_pos()
             mx = mouse_pos[0]
@@ -348,22 +362,23 @@ def main():
                 if end_turn_button.rect.collidepoint((mx,my)):
                     print("End Turn button was clicked")
                     text_to_display = m.turn_controller.current_character.end_turn()
+                    selected_character = m.turn_controller.current_character
+                    square = m.get_square_at(selected_character.location)
+                    within_range = m.turn_controller.current_character.within_range(m.turn_controller.current_character.range)
                     selected_action = None
                     break
                     
                 else:
                     for use_btn in use_buttons:
                         if use_btn.rect.collidepoint((mx,my)):
-                            print("Use action: {:}".format(selected_character.actions[use_buttons.index(use_btn)].description))
                             selected_action = selected_character.actions[use_buttons.index(use_btn)]
                             within_range = selected_character.within_range(selected_action.range, for_action = True)
-                            print("Range displayed: action")
-                            #text_to_display = selected_character.end_turn()
                             break
                 
                 # map mouse x = mmx, map mouse y = mmy, i.e. which square on the map was clicked
-                mmx = screen_to_map(mx,my)[0]
-                mmy = screen_to_map(mx,my)[1]
+                mouse_pos_map = screen_to_map(mx,my, map_offset_x, map_offset_y)
+                mmx = mouse_pos_map[0]
+                mmy = mouse_pos_map[1]
                 
                 # if a square on map was clicked
                 if ( 0 <= mmx < m.get_width() ) and ( 0 <= mmy < m.get_height() ): 
@@ -372,15 +387,6 @@ def main():
                 # if there is a square at the selected map coordinates
                 if m.get_square_at(Coordinates(mmx, mmy)):
                     square = m.get_square_at(Coordinates(mmx, mmy))
-                    
-                    # if the square has a character, and an action or move is not ongoing
-                    if not selected_action and square.has_character() and len(within_range) == 0:
-                        selected_character = square.character
-                        if selected_character.has_turn() and not selected_character.has_moved:
-                            within_range = selected_character.within_range(selected_character.range)
-                            print("Range displayed: movement")
-                        else:
-                            text_to_display = "It's not this character's turn."
                     
                     # if an empty square was clicked
                     if not square in within_range:
@@ -416,10 +422,10 @@ def main():
                                 
                                 # get the current map and screen locations
                                 current_map_loc = selected_character.location
-                                current_scr_loc = map_to_screen(selected_character.location.x, selected_character.location.y)
+                                current_scr_loc = map_to_screen(selected_character.location.x, selected_character.location.y, map_offset_x, map_offset_y)
                                 
                                 # set the target screen location for the current step
-                                step_scr_target = map_to_screen(step.x, step.y)
+                                step_scr_target = map_to_screen(step.x, step.y, map_offset_x, map_offset_y)
                                 
                                 # determine if the character has walk sprites and prepare the animation
                                 walk_animation = False
@@ -430,27 +436,37 @@ def main():
                                     sprite_counter = 0
                                     walk_animation = True
                                 
+                                # move the character according to the shortest path step
+                                #up
+                                if step.x == current_map_loc.x and step.y < current_map_loc.y:
+                                    selected_character.facing = direction.UP
+                                    facing = "up"
+                                #down
+                                elif step.x == current_map_loc.x and step.y > current_map_loc.y:
+                                    selected_character.facing = direction.DOWN
+                                    facing = "down"
+                                #left
+                                elif step.x < current_map_loc.x and step.y == current_map_loc.y:
+                                    selected_character.facing = direction.LEFT
+                                    facing = "left"
+                                #right
+                                elif step.x > current_map_loc.x and step.y == current_map_loc.y:
+                                    selected_character.facing = direction.RIGHT
+                                    facing = "right"
+                                
                                 # while the character has not reached the target
                                 while not current_scr_loc == step_scr_target:
                                     
                                     # cap FPS
                                     clock.tick(fps)
                                     # render squares, selected square marker, and all characters except the one that moves
-                                    render_squares()
-                                    #render_selected_squares()
+                                    screen.blit(map_surface, (map_offset_x,map_offset_y))
                                     render_all_characters(excluding=[selected_character])
                                     render_char_info()
                                     end_turn_button = render_bottom_menu()
                                     if text_to_display:
                                         render_bottom_menu_text(text_to_display)
                                     use_buttons = render_bottom_menu_actions()
-                                    
-                                    
-                                    # get the direction the character is facing
-                                    if selected_character.facing == direction.UP: facing = "up"
-                                    elif selected_character.facing == direction.DOWN: facing = "down"
-                                    elif selected_character.facing == direction.LEFT: facing = "left"
-                                    elif selected_character.facing == direction.RIGHT: facing = "right"
                                     
                                     # if walk sprites available
                                     if walk_animation:
@@ -471,31 +487,24 @@ def main():
                                     else:
                                         screen.blit(sprites[selected_character.stand_sprites[facing]], (current_scr_loc[0] + character_offset_x, current_scr_loc[1] + character_offset_y))
                                     
-                                    # move the character according to the shortest path step
-                                    #up
-                                    if step.x == current_map_loc.x and step.y < current_map_loc.y:
+                                    # move the character on screen according to the shortest path step
+                                    if facing == "up":
                                         current_scr_loc = (current_scr_loc[0] + 2, current_scr_loc[1] - 1)
-                                        selected_character.facing = direction.UP
-                                    #down
-                                    elif step.x == current_map_loc.x and step.y > current_map_loc.y:
+                                    elif facing == "down":
                                         current_scr_loc = (current_scr_loc[0] - 2, current_scr_loc[1] + 1)
-                                        selected_character.facing = direction.DOWN
-                                    #left
-                                    elif step.x < current_map_loc.x and step.y == current_map_loc.y:
+                                    elif facing == "left":
                                         current_scr_loc = (current_scr_loc[0] - 2, current_scr_loc[1] - 1)
-                                        selected_character.facing = direction.LEFT
-                                    #right
-                                    elif step.x > current_map_loc.x and step.y == current_map_loc.y:
+                                    elif facing == "right":
                                         current_scr_loc = (current_scr_loc[0] + 2, current_scr_loc[1] + 1)
-                                        selected_character.facing = direction.RIGHT
                                     
-                                    # update surface
+                                    pygame.display.set_caption("fps: " + str(int(clock.get_fps())))
+                                    
                                     pygame.display.update()
                                     did_update_already = True
                                 
-                                # move the character in the background logic
-                                selected_character.move_to_coordinates(step)
-                            
+                                #move in the background logic
+                                selected_character.move_forward()
+                                
                             # don't display range after the character has moved
                             within_range = []
                     
@@ -516,6 +525,7 @@ def main():
             render_bottom_menu_text(text_to_display)
         use_buttons = render_bottom_menu_actions()
         
+        pygame.display.set_caption("fps: " + str(int(clock.get_fps())))
         
         #pygame.transform.scale(screen, (screen_w * scaling, screen_h * scaling), window)
         pygame.display.update()
