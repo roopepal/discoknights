@@ -76,26 +76,33 @@ def main():
             else:
                 surface.blit( selected_img, (sq_sx, sq_sy) )
     
-    def render_characters(surface, excluding=[]):
+    def render_characters(surface, walking=None, scr_loc=None, sprite_counter=None):
         # collect dirty rects
         dirty = []
         
-        # For each square on the map, check if there's a character and if yes, draw it.
-        for x in range(m.get_width()):
-            for y in range(m.get_height()):
+        # For each square on the map, check if there's a character and if yes, draw it. Do this in the order of squares to maintain proper drawing order.
+        for x in range(m.width):
+            for y in range(m.height):
                 square = m.get_square_at(Coordinates(x,y))
+                character = square.character
                 # Translate coordinates
                 screen_x, screen_y = map_to_screen(x,y, map_offset_x, map_offset_y)
                 
-                if square.has_character() and not square.character in excluding:
-                    if square.character.facing == direction.UP: facing = "up"
-                    elif square.character.facing == direction.DOWN: facing = "down"
-                    elif square.character.facing == direction.LEFT: facing = "left"
-                    elif square.character.facing == direction.RIGHT: facing = "right"
+                if square.has_character():
+                    if character.facing == direction.UP: facing = "up"
+                    elif character.facing == direction.DOWN: facing = "down"
+                    elif character.facing == direction.LEFT: facing = "left"
+                    elif character.facing == direction.RIGHT: facing = "right"
                     
-                    # Draw sprite based on the direction facing
-                    surface.blit(sprites[square.character.stand_sprites[facing]], (screen_x + character_offset_x, screen_y + character_offset_y))
-                    dirty.append(pygame.Rect(48,48, screen_x+character_offset_x,screen_y+character_offset_y))
+                    if character == walking and character.walk_sprites:
+                        # Draw sprite based on the direction facing
+                        dirty.append( surface.blit(sprites[character.walk_sprites[facing][sprite_counter]], (scr_loc[0] + character_offset_x, scr_loc[1] + character_offset_y))) 
+                    else:
+                        dirty.append( surface.blit(sprites[character.stand_sprites[facing]], (screen_x + character_offset_x, screen_y + character_offset_y)) )
+                        #dirty.append(pygame.Rect(48,48, screen_x+character_offset_x,screen_y+character_offset_y))
+                       
+                       
+                        
         
         return dirty
         
@@ -333,26 +340,28 @@ def main():
     
     '''Initial render'''
     #map
-    dirty_rects.append(screen.blit(map_surface, (map_offset_x, map_offset_y)))
+    screen.blit(map_surface, (map_offset_x, map_offset_y))
     #move range for the first character
     render_range(screen)
     #bottom bar
-    dirty_rects.append(screen.blit(bottom_bar, (0, screen_h-28)))
+    screen.blit(bottom_bar, (0, screen_h-28))
     #characters
-    dirty_rects += render_characters(screen)
+    render_characters(screen)
     #end turn button and action menu
-    dirty_rects.append(render_end_turn_button(screen))
+    render_end_turn_button(screen)
     use_buttons = render_action_menu(screen)
-    for button in use_buttons:
-        dirty_rects.append(button.rect)
     #character info
-    dirty_rects += render_char_info(screen)
+    render_char_info(screen)
     
-    pygame.display.update()
+    pygame.display.flip()
         
+    #debug milliseconds from last frame
+    new_time, old_time = None, None
         
     ''' start main loop '''
     while not done:
+        
+        
         
         clock.tick(fps)
         dirty_rects = []
@@ -508,48 +517,41 @@ def main():
                                 walk_animation = True
                             
                             # move the character according to the shortest path step
-                            #up
                             if step.x == current_map_loc.x and step.y < current_map_loc.y:
                                 selected_character.facing = direction.UP
                                 facing = "up"
-                            #down
                             elif step.x == current_map_loc.x and step.y > current_map_loc.y:
                                 selected_character.facing = direction.DOWN
                                 facing = "down"
-                            #left
                             elif step.x < current_map_loc.x and step.y == current_map_loc.y:
                                 selected_character.facing = direction.LEFT
                                 facing = "left"
-                            #right
                             elif step.x > current_map_loc.x and step.y == current_map_loc.y:
                                 selected_character.facing = direction.RIGHT
                                 facing = "right"
                             
+                            dirty_rects_moving = []
                             # while the character has not reached the target
-                            in_target = False
-                            while not in_target:
-                                if current_scr_loc == step_scr_target:
-                                    in_target = True
+                            while not current_scr_loc == step_scr_target:
                                 
-                                dirty_rects = []
-
                                 clock.tick(fps)
+                                
                                 # render squares, and all characters except the one that moves
                                 screen.blit(map_surface, (map_offset_x,map_offset_y))
-                                render_characters(screen, excluding=[selected_character])
-                                dirty_rects.append(render_end_turn_button(screen))
+                                #dirty_rects += render_characters(screen)
+                                dirty_rects_moving.append(render_end_turn_button(screen))
                                 #if text_to_display:
                                 #    render_info_text(text_to_display)
                                 use_buttons = render_action_menu(screen)
                                 for button in use_buttons:
-                                    dirty_rects.append(button.rect)
+                                    dirty_rects_moving.append(button.rect)
                                 
                                 # if walk sprites available
-                                if walk_animation and not in_target:
+                                if walk_animation:
                                     
                                     # render the current frame of the walk animation
-                                    dirty_rects.append(screen.blit(sprites[selected_character.walk_sprites[facing][sprite_counter]], \
-                                                (current_scr_loc[0] + character_offset_x, current_scr_loc[1] + character_offset_y)))
+                                    #dirty_rects.append(screen.blit(sprites[selected_character.walk_sprites[facing][sprite_counter]], \
+                                    #            (current_scr_loc[0] + character_offset_x, current_scr_loc[1] + character_offset_y)))
                                     
                                     # if animation is set to half speed, may look too fast if full speed
                                     if half_speed and frame_counter % 2 == 0:
@@ -561,8 +563,10 @@ def main():
                                     frame_counter += 1 
                                     
                                 # if no walk sprites or if in target
-                                else:
-                                    screen.blit(sprites[selected_character.stand_sprites[facing]], (current_scr_loc[0] + character_offset_x, current_scr_loc[1] + character_offset_y))
+                                #else:
+                                #    screen.blit(sprites[selected_character.stand_sprites[facing]], (current_scr_loc[0] + character_offset_x, current_scr_loc[1] + character_offset_y))
+                                
+                                dirty_rects_moving += render_characters(screen, selected_character, current_scr_loc, sprite_counter)
                                 
                                 # move the character on screen according to the shortest path step
                                 if facing == "up":
@@ -574,15 +578,27 @@ def main():
                                 elif facing == "right":
                                     current_scr_loc = (current_scr_loc[0] + 2, current_scr_loc[1] + 1)
                                 
-                                pygame.display.set_caption("fps: " + str(int(clock.get_fps())))
                                 
-                                print([str(r) for r in dirty_rects])
-                                pygame.display.update(dirty_rects)
-                                did_update_already = True
+                                if new_time:
+                                    old_time = new_time
+                                new_time = pygame.time.get_ticks()
+                                if old_time and new_time:
+                                    pygame.display.set_caption("fps: " + str(int(clock.get_fps())) + " ms: " + str(new_time-old_time))
+
+                                #print([str(r) for r in dirty_rects])
+                                d = pygame.Rect(0,0,20,20)
+                                pygame.display.update(dirty_rects_moving)
+                                print([ str(r) for r in dirty_rects_moving ])
+                                #did_update_already = True
+                                dirty_rects_moving = []
                             
                             #move in the background logic
                             selected_character.move_forward()
                             
+                        else:
+                            screen.blit(map_surface, (map_offset_x, map_offset_y))
+                            dirty_rects += render_characters(screen)
+                        
                         # don't display range after the character has moved
                         within_range = []
                         
@@ -613,12 +629,16 @@ def main():
             #print(text_rect)
             text_to_display = None
         
-        pygame.display.set_caption("fps: " + str(int(clock.get_fps())))
+        
+        if new_time:
+            old_time = new_time
+        new_time = pygame.time.get_ticks()
+        if new_time and old_time:
+            pygame.display.set_caption("fps: " + str(int(clock.get_fps())) + " ms: " + str(new_time-old_time))
         
         #pygame.transform.scale(screen, (screen_w * scaling, screen_h * scaling), window)
         #print(len(dirty_rects))
-        #for rect in dirty_rects:
-        #    print(rect)
+        print([str(r) for r in dirty_rects])
         pygame.display.update(dirty_rects)
         
     pygame.quit()
