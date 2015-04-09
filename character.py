@@ -148,7 +148,7 @@ class Character(object):
                             #if for action, does not need to be empty
                             if for_action:
                                 q.put(v)
-                                if not square in within_range:
+                                if not square in within_range and not square.character == self:
                                     within_range.append(square)
                             #if for movement, needs to be empty
                             elif square.is_empty():

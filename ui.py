@@ -14,6 +14,7 @@ class Button():
         self.pos = pos
         self.hovered = False
         self.pushed = False
+        self.dirty = False
         
         self.set_rect()
         
