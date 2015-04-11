@@ -128,6 +128,12 @@ stand_sprites: {
 	left: ../graphics/ai1_left.gif
 	right: ../graphics/ai1_right.gif
 }
+walk_sprites: {
+	up: ../graphics/ai1_walk1_up.gif, ../graphics/ai1_walk2_up.gif, ../graphics/ai1_walk3_up.gif, ../graphics/ai1_walk4_up.gif 
+	down: ../graphics/ai1_walk1_down.gif, ../graphics/ai1_walk2_down.gif, ../graphics/ai1_walk3_down.gif, ../graphics/ai1_walk4_down.gif
+	left: ../graphics/ai1_walk1_left.gif, ../graphics/ai1_walk2_left.gif, ../graphics/ai1_walk3_left.gif, ../graphics/ai1_walk4_left.gif
+	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
+}
 
 
 
@@ -144,6 +150,12 @@ stand_sprites: {
 	down: ../graphics/ai1_down.gif
 	left: ../graphics/ai1_left.gif
 	right: ../graphics/ai1_right.gif
+}
+walk_sprites: {
+	up: ../graphics/ai1_walk1_up.gif, ../graphics/ai1_walk2_up.gif, ../graphics/ai1_walk3_up.gif, ../graphics/ai1_walk4_up.gif 
+	down: ../graphics/ai1_walk1_down.gif, ../graphics/ai1_walk2_down.gif, ../graphics/ai1_walk3_down.gif, ../graphics/ai1_walk4_down.gif
+	left: ../graphics/ai1_walk1_left.gif, ../graphics/ai1_walk2_left.gif, ../graphics/ai1_walk3_left.gif, ../graphics/ai1_walk4_left.gif
+	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
 }
 
 
@@ -162,5 +174,10 @@ stand_sprites: {
 	left: ../graphics/ai1_left.gif
 	right: ../graphics/ai1_right.gif
 }
-
+walk_sprites: {
+	up: ../graphics/ai1_walk1_up.gif, ../graphics/ai1_walk2_up.gif, ../graphics/ai1_walk3_up.gif, ../graphics/ai1_walk4_up.gif 
+	down: ../graphics/ai1_walk1_down.gif, ../graphics/ai1_walk2_down.gif, ../graphics/ai1_walk3_down.gif, ../graphics/ai1_walk4_down.gif
+	left: ../graphics/ai1_walk1_left.gif, ../graphics/ai1_walk2_left.gif, ../graphics/ai1_walk3_left.gif, ../graphics/ai1_walk4_left.gif
+	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
+}
 

@@ -1,5 +1,7 @@
 from square import Square
 from coordinates import Coordinates
+from map_object import MapObject
+from object_type import ObjectType
 #from character import Character
 from turn import Turn
 
@@ -10,7 +12,9 @@ class Map(object):
     
     def __init__(self):
         self.characters = []
+        self.objects = []
         self.squaretypes = {}
+        self.object_types = {}
         self.turn_controller = Turn(self)
         
     def build_map(self, height, width, squares_input):
@@ -23,9 +27,14 @@ class Map(object):
         
         for y in range(height):
             for x in range(width):
+                # Recognize objects on map
+                input_parts = squares_input[y][x].split(".")
+                print(input_parts)
                 # If square type is properly configured                
-                if squares_input[y][x] in self.squaretypes.keys():
-                    self.squares[y][x] = Square(Coordinates(x,y), self.squaretypes[squares_input[y][x]])
+                if input_parts[0] in self.squaretypes.keys():
+                    self.squares[y][x] = Square(Coordinates(x,y), self.squaretypes[input_parts[0]])
+                if len(input_parts) > 1:
+                    self.add_object(MapObject(self.object_types[input_parts[1]]), Coordinates(x,y))
                     
     def get_width(self):
         return self.width
@@ -50,6 +59,10 @@ class Map(object):
     def add_squaretype(self, squaretype):
         if not squaretype.short in self.squaretypes:
             self.squaretypes[squaretype.short] = squaretype
+            
+    def add_object_type(self, object_type):
+        if not object_type.short in self.object_types:
+            self.object_types[object_type.short] = object_type
       
     def add_character(self, character, coordinates, facing):
         if self.get_square_at(coordinates).is_empty():
@@ -59,7 +72,16 @@ class Map(object):
             character.added_to_map(self,coordinates,facing)
         else:
             # raise an error
-            print("Square wasn't empty. Cannot add character.")   
+            print("Square wasn't empty. Cannot add character.")
+    
+    def add_object(self, map_object, coordinates):
+        if self.get_square_at(coordinates).is_empty():
+            self.objects.append(map_object)
+            self.get_square_at(coordinates).object = map_object
+            map_object.added_to_map(self,coordinates)
+        else:
+            # raise an error
+            print("Square wasn't empty. Cannot add object.")
     
     def get_turn_controller(self):
         return self.turn_controller
@@ -73,7 +95,6 @@ class Map(object):
         l = [   [ str(s.get_type())[0] for s in self.squares[y] ] for y in range(self.height) ]
         for y in range(self.height):
             print(l[y])
-        
     
     def print_simple(self):
         '''
@@ -116,11 +137,6 @@ class Map(object):
                     self.ret = self.ret + self.get_square_at(Coordinates(x,y)).get_character().get_name()[0] + " "
             self.ret = self.ret + "\n"
         print(self.ret)
-    
-    
-    
-    
-    
     
     def __str__(self):
         self.ret = ""

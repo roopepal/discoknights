@@ -1,5 +1,6 @@
 from action import Action
 from map import Map
+from object_type import ObjectType
 from squaretype import SquareType
 from character import Character
 from coordinates import Coordinates
@@ -126,7 +127,19 @@ class ConfigReader(object):
                         item["sprite"]
                         )
                     )
-                
+            
+            elif item["id"].lower() == "object":
+                print("Building object type '{:}'...".format(item["name"]))
+                m.add_object_type(
+                    ObjectType(
+                        item["name"],
+                        item["short"],
+                        item["sprite"],
+                        int(item["offset_x"]),
+                        int(item["offset_y"])
+                        )
+                    )
+            
             elif item["id"].lower() == "map":
                 print("Building map...")
                 m.build_map(

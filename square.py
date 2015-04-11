@@ -11,6 +11,7 @@ class Square(object):
         self.location = coordinates
         self.squaretype = squaretype
         self.character = None
+        self.object = None
     
     def get_location(self):
         return self.location
@@ -34,7 +35,7 @@ class Square(object):
             return True
     
     def is_empty(self):
-        if self.character == None:
+        if self.character == None and self.object == None:
             return True
         else:
             return False

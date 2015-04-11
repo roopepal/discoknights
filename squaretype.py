@@ -18,6 +18,7 @@ class SquareType(object):
         self.short = short
         self.walkable = walkable
         self.sprite = sprite
+        self.offset_y = 0
     
     def get_name(self):
         return self.name

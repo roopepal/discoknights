@@ -2,7 +2,6 @@ DISCO KNIGHTS Config
 
 // Lines that start with two forward slashes are recognized as comments.
 //
-// Squaretype short names must be a unique single character.
 // Use the short names (characters) for building the map.
 //
 // Define the squares of the map inside curly braces, each row on its own line.
@@ -11,26 +10,48 @@ DISCO KNIGHTS Config
 name: water
 short: w
 walkable: false
-sprite: ../graphics/water.png
+sprite: ../graphics/water.gif
 
 #Squaretype
 name: grass
 short: g
 walkable: true
-sprite: ../graphics/grass.png
+sprite: ../graphics/grass.gif
+
+#Squaretype
+name: bridge_hor
+short: bh
+walkable: true
+sprite: ../graphics/bridge_hor.gif
+
+#Squaretype
+name: bridge_ver
+short: bv
+walkable: true
+sprite: ../graphics/bridge_ver.gif
+
+#Object
+name: rock
+short: r
+sprite: ../graphics/rock.gif
+offset_x: 0
+offset_y: -12
+
 
 #Map
-width: 10
-height: 10
+width: 12
+height: 12
 squares: {
-w w w w w w w w w w
-w g g g g g g g g w
-w g g g g g g g g w
-w g g g g g g g g w
-w g g g g g g g g w
-w g g g g g g g g w
-w g g g g g g g g w
-w g g g g g g g g w
-w g g g g g g g g w
-w w w w w w w w w w
+w w w w w w w w w w w w
+w w w w w w w w w w w w
+w w g g g g g g g g w w
+w w g g g g g g g.r g w w
+w w g g g g g g g g w w
+w w g g g g g g g.r g w w
+w w g g g g g g g g w w
+w w g g w w w bv w w w w
+w w g g bh w w bv w w w w
+w w g g w w w g g g g w
+w w w w w w w g g g g w
+w w w w w w w w w w w w
 }
