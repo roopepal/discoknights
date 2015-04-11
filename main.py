@@ -301,8 +301,8 @@ def main():
     m = r.build_from_config(map_config, character_config)
     
     #set window size
-    screen_w = 640
-    screen_h = 480
+    screen_w = 960
+    screen_h = 576
     #scaling = 1
     #screen = pygame.Surface((screen_w, screen_h))
     #window = pygame.display.set_mode((screen_w * scaling, screen_h * scaling))

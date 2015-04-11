@@ -9,8 +9,8 @@ DISCO KNIGHTS Config
 name: A
 max_health: 100
 move_range: 3
-x: 3
-y: 3
+x: 2
+y: 4
 facing: right
 is_ai: false
 stand_sprites: {
@@ -53,8 +53,8 @@ name: Stun
 name: B
 max_health: 100
 move_range: 3
-x: 3
-y: 4
+x: 2
+y: 5
 facing: right
 is_ai: false
 stand_sprites: {
@@ -84,8 +84,8 @@ name: Heal
 name: C
 max_health: 80
 move_range: 3
-x: 3
-y: 5
+x: 2
+y: 6
 facing: right
 is_ai: false
 stand_sprites: {
@@ -118,8 +118,8 @@ name: Shoot
 name: D
 max_health: 100
 move_range: 3
-x: 5
-y: 3
+x: 9
+y: 5
 facing: left
 is_ai: true
 stand_sprites: {
@@ -141,8 +141,8 @@ walk_sprites: {
 name: E
 max_health: 100
 move_range: 3
-x: 5
-y: 4
+x: 9
+y: 6
 facing: left
 is_ai: true
 stand_sprites: {
@@ -164,8 +164,8 @@ walk_sprites: {
 name: F
 max_health: 100
 move_range: 3
-x: 5
-y: 5
+x: 9
+y: 7
 facing: left
 is_ai: true
 stand_sprites: {

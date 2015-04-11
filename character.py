@@ -146,7 +146,7 @@ class Character(object):
                         if square.range_count <= move_range:
                             square.visited = True
                             #if for action, does not need to be empty
-                            if for_action:
+                            if for_action and not square.object:
                                 q.put(v)
                                 if not square in within_range and not square.character == self:
                                     within_range.append(square)

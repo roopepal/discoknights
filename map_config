@@ -43,15 +43,15 @@ width: 12
 height: 12
 squares: {
 w w w w w w w w w w w w
-w w w w w w w w w w w w
-w w g g g g g g g g w w
-w w g g g g g g g.r g w w
-w w g g g g g g g g w w
-w w g g g g g g g.r g w w
-w w g g g g g g g g w w
-w w g g w w w bv w w w w
-w w g g bh w w bv w w w w
-w w g g w w w g g g g w
-w w w w w w w g g g g w
+w g g g g w w g g g g w
+w g g.r g g bh bh g g g.r g w
+w g g g g w w g g g g w
+w g g g g w w g g g g w
+w g g g g g g g g g g w
+w g g g g g g g g g g w
+w g g g g w w g g g g w
+w g g g g w w g g g g w
+w g g.r g g bh bh g g g.r g w
+w g g g g w w g g g g w
 w w w w w w w w w w w w
 }

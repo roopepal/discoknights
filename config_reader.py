@@ -165,8 +165,13 @@ class ConfigReader(object):
                 if 'walk_sprites' in item:
                     new_character.walk_sprites = item["walk_sprites"]
                 
-                if m.contains_coordinates(Coordinates(int(item["x"]), int(item["y"]))):
+                coordinates = Coordinates(int(item["x"]), int(item["y"]))
+                if m.contains_coordinates(coordinates) and m.get_square_at(coordinates).squaretype.walkable:
                     m.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
+                elif not m.get_square_at(coordinates).squaretype.walkable:
+                    print("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, m.get_square_at(coordinates).squaretype.name))
+                elif not m.contains_coordinates(coordinates):
+                    print("Cannot add character to {:}, out of bounds.".format(coordinates))
                 
                 for item2 in character_config:
                     if item2["id"].lower() == "action" and item2["character"] == new_character.name:
