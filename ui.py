@@ -1,10 +1,33 @@
 import pygame, sys
 pygame.init()
 
+class MenuOption: 
+    hover = False
 
+    def __init__(self, text):
+        self.text = text
+            
+    def draw(self):
+        self.set_rend()
+        self.base_surface.blit(self.rend, self.rect)
+        
+    def set_rend(self):
+        self.rend = super_large_font.render(self.text, False, self.get_color())
+        
+    def get_color(self):
+        if self.hover:
+            return (255, 255, 255)
+        else:
+            return (150, 150, 150)
+        
+    def set_rect(self, screen_surface, options_list):
+        self.set_rend()
+        self.rect = self.rend.get_rect()
+        self.base_surface = screen_surface
+        self.rect.centerx = screen_surface.get_rect().centerx
+        self.rect.y = screen_surface.get_rect().centery - ( len(options_list) * 50 / 2 ) + ( options_list.index(self) * 50 )
 
 class Button():
-    
     hover = False
     
     def __init__(self, surface_normal, surface_hover, surface_push, pos):
@@ -31,7 +54,8 @@ class Button():
         self.rect.topleft = self.pos
         
 font = pygame.font.Font("../coders_crux.ttf", 14)
-large_font = pygame.font.Font("../coders_crux.ttf", 24)        
+large_font = pygame.font.Font("../coders_crux.ttf", 24)
+super_large_font = pygame.font.Font("../coders_crux.ttf", 48)
 
 # build end turn button background and text
 end_turn_bg = pygame.image.load("../graphics/end_turn_button.gif")        

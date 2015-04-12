@@ -29,14 +29,14 @@ walk_sprites: {
 #Action
 character: A
 type: damage
-strength: 15
+strength: 35
 max_range: 1
 name: Hit  
 
 #Action
 character: A
 type: damage
-strength: 5
+strength: 30
 max_range: 1
 name: Poke
 
@@ -67,14 +67,14 @@ stand_sprites: {
 #Action
 character: B
 type: damage
-strength: 10
+strength: 35
 max_range: 2
 name: Spell  
 
 #Action
 character: B
 type: heal
-strength: 10
+strength: 15
 max_range: 2
 name: Heal
 
@@ -98,14 +98,14 @@ stand_sprites: {
 #Action
 character: C
 type: damage
-strength: 15
+strength: 35
 max_range: 1
 name: Hit  
 
 #Action
 character: C
 type: damage
-strength: 10
+strength: 25
 max_range: 2
 name: Shoot
 

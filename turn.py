@@ -41,6 +41,8 @@ class Turn(object):
             # set message variable here also                                #TODO!
             self.current_character.stunned -= 1
             self.next()
+        elif self.current_character.dead:
+            self.next()
         else:    
             self.current_has_moved = False
             ret = "Move or choose an action."

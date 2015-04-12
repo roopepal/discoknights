@@ -35,7 +35,7 @@ class Square(object):
             return True
     
     def is_empty(self):
-        if self.character == None and self.object == None:
+        if (self.character == None or self.character.dead) and self.object == None:
             return True
         else:
             return False

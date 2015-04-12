@@ -48,6 +48,7 @@ class Character(object):
         self.map = current_map
         self.location = location
         self.facing = facing
+        self.dead = False
         
     def get_max_health(self):
         return self.max_health
@@ -62,6 +63,9 @@ class Character(object):
     def damage(self, amount):
         '''Decreases the character's health points by the given amount'''
         self.health -= amount
+        if self.health <= 0:
+            self.dead = True
+            self.health = 0
     
     def stun(self, turns):
         '''Stuns the character for the given amount of turns.'''
