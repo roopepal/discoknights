@@ -291,7 +291,7 @@ def main():
     ''' Game starts '''
     pygame.init()
     clock = pygame.time.Clock()
-    fps = 60
+    fps = 1000
     
     #read config from files
     r = ConfigReader()
@@ -654,7 +654,7 @@ def main():
                                 # while the character has not reached the target
                                 while not current_scr_loc == step_scr_target:
                                 
-                                    clock.tick(fps)
+                                    clock.tick(0)
                                     map_rect = blit_map(screen)
                                 
                                     pygame.event.pump()
