@@ -162,7 +162,7 @@ class Character(object):
 
             self.map.get_square_at(u).finished = True
         
-        print("Calculated range.")
+        #print("Calculated range.")
         return within_range
             
     def get_shortest_path(self, location):
@@ -189,6 +189,7 @@ class Character(object):
                 if v == s:
                     path.reverse()
                     return path
+                    
                 elif self.map.get_square_at(v).range_count < current_range_count and self.map.get_square_at(v).get_type().is_walkable() and self.map.get_square_at(v).is_empty():
                     path.append(v)
                     e = v

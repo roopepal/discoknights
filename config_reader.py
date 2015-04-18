@@ -186,5 +186,5 @@ class ConfigReader(object):
                                     item2["name"]
                                     )
             
-        print("Map built successfully.")
+        print("Map built successfully.\n")
         return m

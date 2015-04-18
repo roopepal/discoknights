@@ -5,6 +5,8 @@ DISCO KNIGHTS Config
 
 // Player's characters
 
+//------------------------------------------------------------------
+
 #Character
 name: A
 max_health: 100
@@ -47,7 +49,7 @@ strength: 1
 max_range: 1
 name: Stun
 
-
+//------------------------------------------------------------------
 
 #Character
 name: B
@@ -78,7 +80,7 @@ strength: 15
 max_range: 2
 name: Heal
 
-
+//------------------------------------------------------------------
 
 #Character
 name: C
@@ -109,10 +111,12 @@ strength: 25
 max_range: 2
 name: Shoot
 
-
+//------------------------------------------------------------------
 
 
 // AI characters:
+
+//------------------------------------------------------------------
 
 #Character
 name: D
@@ -135,7 +139,21 @@ walk_sprites: {
 	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
 }
 
+#Action
+character: D
+type: damage
+strength: 35
+max_range: 1
+name: Hit  
 
+#Action
+character: D
+type: damage
+strength: 30
+max_range: 1
+name: Poke
+
+//------------------------------------------------------------------
 
 #Character
 name: E
@@ -158,14 +176,28 @@ walk_sprites: {
 	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
 }
 
+#Action
+character: E
+type: damage
+strength: 35
+max_range: 1
+name: Hit  
 
+#Action
+character: E
+type: damage
+strength: 30
+max_range: 1
+name: Poke
+
+//------------------------------------------------------------------
 
 #Character
 name: F
 max_health: 100
 move_range: 3
-x: 9
-y: 7
+x: 10
+y: 10
 facing: left
 is_ai: true
 stand_sprites: {
@@ -181,3 +213,16 @@ walk_sprites: {
 	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
 }
 
+#Action
+character: F
+type: damage
+strength: 35
+max_range: 1
+name: Hit  
+
+#Action
+character: F
+type: damage
+strength: 30
+max_range: 1
+name: Poke

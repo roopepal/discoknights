@@ -1,3 +1,4 @@
+from ai import Ai
 from map import Map
 from character import Character
 from squaretype import SquareType
@@ -21,9 +22,6 @@ m = r.build_from_config(map_config, character_config)
 
 m.print_simple()
 
-print( json.dumps( m.characters[0].walk_sprites, indent = 2))
-
-
 '''
 m.characters[0].use_action(1, Coordinates(5,5))
 print(m.characters[1].health)
@@ -35,3 +33,36 @@ m.characters[0].use_action(1, Coordinates(5,5))
 print(m.characters[1].health)
 '''
 
+ai = Ai(m)
+
+ai.character = m.characters[3]
+
+m.turn_controller.next()
+m.turn_controller.next()
+m.turn_controller.next()
+
+ai.make_move()
+ai.make_move()
+ai.make_move()
+
+m.print_simple()
+
+m.turn_controller.next()
+m.turn_controller.next()
+m.turn_controller.next()
+
+ai.make_move()
+ai.make_move()
+ai.make_move()
+
+m.print_simple()
+
+m.turn_controller.next()
+m.turn_controller.next()
+m.turn_controller.next()
+
+ai.make_move()
+ai.make_move()
+ai.make_move()
+
+m.print_simple()

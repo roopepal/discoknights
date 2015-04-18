@@ -29,7 +29,6 @@ class Map(object):
             for x in range(width):
                 # Recognize objects on map
                 input_parts = squares_input[y][x].split(".")
-                print(input_parts)
                 # If square type is properly configured                
                 if input_parts[0] in self.squaretypes.keys():
                     self.squares[y][x] = Square(Coordinates(x,y), self.squaretypes[input_parts[0]])
@@ -103,10 +102,14 @@ class Map(object):
         self.ret = ""
         for y in range(self.get_height()):
             for x in range(self.get_width()):
-                if self.get_square_at(Coordinates(x,y)).is_empty():
-                    self.ret = self.ret + str(self.get_square_at(Coordinates(x,y)).get_type())[0] + " "
-                else:
+                
+                if self.get_square_at(Coordinates(x,y)).character:
                     self.ret = self.ret + self.get_square_at(Coordinates(x,y)).get_character().get_name()[0] + " "
+                elif not self.get_square_at(Coordinates(x,y)).is_empty():
+                    self.ret = self.ret + str(self.get_square_at(Coordinates(x,y)).object) + " "
+                else:
+                    self.ret = self.ret + str(self.get_square_at(Coordinates(x,y)).get_type())[0] + " "
+                
             self.ret = self.ret + "\n"
         print(self.ret)
         
@@ -127,14 +130,17 @@ class Map(object):
         print(self.ret)
     
     def print_range_counts(self):
-        ''' Prints a map with movable squares marked with an x. '''
+        ''' Prints a map with range counts for each square. '''
         self.ret = ""
         for y in range(self.get_height()):
             for x in range(self.get_width()):
-                if self.get_square_at(Coordinates(x,y)).is_empty():
-                    self.ret = self.ret + str(self.get_square_at(Coordinates(x,y)).range_count) + " "
+                #if self.get_square_at(Coordinates(x,y)).is_empty():
+                if self.get_square_at(Coordinates(x,y)).range_count == 0:
+                    self.ret = self.ret + ". "
                 else:
-                    self.ret = self.ret + self.get_square_at(Coordinates(x,y)).get_character().get_name()[0] + " "
+                    self.ret = self.ret + str(self.get_square_at(Coordinates(x,y)).range_count) + " "
+                #else:
+                #    self.ret = self.ret + self.get_square_at(Coordinates(x,y)).get_character().get_name()[0] + " "
             self.ret = self.ret + "\n"
         print(self.ret)
     
