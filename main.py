@@ -114,7 +114,7 @@ def main():
                     else:
                         dirty.append( surface.blit(sprites[character.stand_sprites[facing]], (screen_x + character_offset_x, screen_y + character_offset_y)) )
                         #dirty.append(pygame.Rect(48,48, screen_x+character_offset_x,screen_y+character_offset_y))
-                 
+                
                 elif square.object:
                     dirty.append( surface.blit(sprites[square.object.type.sprite], (screen_x + square.object.type.offset_x, screen_y + square.object.type.offset_y)) )
                        
@@ -305,8 +305,8 @@ def main():
     m = r.build_from_config(map_config, character_config)
     
     #set window size
-    screen_w = 960
-    screen_h = 576
+    screen_w = 1280
+    screen_h = 768
     screen = pygame.display.set_mode((screen_w, screen_h))
     
     #initiate fonts
