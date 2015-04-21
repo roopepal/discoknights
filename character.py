@@ -23,6 +23,7 @@ class Character(object):
         self.stunned = 0
         self.ai = is_ai
         self.has_moved = False
+        self.dead = False
 
     def get_all(self): #DEBUG METHOD
         ret = self.get_name() + str(self.get_location()) + str(self.get_facing())
@@ -48,7 +49,6 @@ class Character(object):
         self.map = current_map
         self.location = location
         self.facing = facing
-        self.dead = False
         
     def get_max_health(self):
         return self.max_health
@@ -167,7 +167,7 @@ class Character(object):
             
     def get_shortest_path(self, location):
         '''
-        Gets the shortest path from the character to the given location.
+        Gets the shortest path from the character to the given location. Uses Lee algorithm.
 		
 		Assumes that the method within_range() has been run right before this so that the range_counts in squares are correct.
         
@@ -261,4 +261,4 @@ class Character(object):
             return ret
                 
     def __str__(self):
-        return self.get_name()
+        return self.name

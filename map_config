@@ -10,30 +10,30 @@ DISCO KNIGHTS Config
 name: water
 short: w
 walkable: false
-sprite: ../graphics/water.gif
+sprite: graphics/water.gif
 
 #Squaretype
 name: grass
 short: g
 walkable: true
-sprite: ../graphics/grass.gif
+sprite: graphics/grass.gif
 
 #Squaretype
 name: bridge_hor
 short: bh
 walkable: true
-sprite: ../graphics/bridge_hor.gif
+sprite: graphics/bridge_hor.gif
 
 #Squaretype
 name: bridge_ver
 short: bv
 walkable: true
-sprite: ../graphics/bridge_ver.gif
+sprite: graphics/bridge_ver.gif
 
 #Object
 name: rock
 short: r
-sprite: ../graphics/rock.gif
+sprite: graphics/rock.gif
 offset_x: 0
 offset_y: -12
 

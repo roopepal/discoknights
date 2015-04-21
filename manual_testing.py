@@ -35,8 +35,6 @@ print(m.characters[1].health)
 
 ai = Ai(m)
 
-ai.character = m.characters[3]
-
 m.turn_controller.next()
 m.turn_controller.next()
 m.turn_controller.next()
@@ -51,18 +49,16 @@ m.turn_controller.next()
 m.turn_controller.next()
 m.turn_controller.next()
 
+print(ai.get_action())
+
 ai.make_move()
 ai.make_move()
 ai.make_move()
+
+m.turn_controller.next()
+m.turn_controller.next()
+m.turn_controller.next()
 
 m.print_simple()
 
-m.turn_controller.next()
-m.turn_controller.next()
-m.turn_controller.next()
-
-ai.make_move()
-ai.make_move()
-ai.make_move()
-
-m.print_simple()
+print(str(ai.get_action()[0]))

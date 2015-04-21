@@ -16,16 +16,16 @@ y: 4
 facing: right
 is_ai: false
 stand_sprites: {
-	up: ../graphics/hero1_up.gif
-	down: ../graphics/hero1_down.gif
-	left: ../graphics/hero1_left.gif
-	right: ../graphics/hero1_right.gif
+	up: graphics/hero1_up.gif
+	down: graphics/hero1_down.gif
+	left: graphics/hero1_left.gif
+	right: graphics/hero1_right.gif
 }
 walk_sprites: {
-	up: ../graphics/hero1_walk1_up.gif, ../graphics/hero1_walk2_up.gif, ../graphics/hero1_walk3_up.gif, ../graphics/hero1_walk4_up.gif 
-	down: ../graphics/hero1_walk1_down.gif, ../graphics/hero1_walk2_down.gif, ../graphics/hero1_walk3_down.gif, ../graphics/hero1_walk4_down.gif
-	left: ../graphics/hero1_walk1_left.gif, ../graphics/hero1_walk2_left.gif, ../graphics/hero1_walk3_left.gif, ../graphics/hero1_walk4_left.gif
-	right: ../graphics/hero1_walk1_right.gif, ../graphics/hero1_walk2_right.gif, ../graphics/hero1_walk3_right.gif, ../graphics/hero1_walk4_right.gif
+	up: graphics/hero1_walk1_up.gif, graphics/hero1_walk2_up.gif, graphics/hero1_walk3_up.gif, graphics/hero1_walk4_up.gif 
+	down: graphics/hero1_walk1_down.gif, graphics/hero1_walk2_down.gif, graphics/hero1_walk3_down.gif, graphics/hero1_walk4_down.gif
+	left: graphics/hero1_walk1_left.gif, graphics/hero1_walk2_left.gif, graphics/hero1_walk3_left.gif, graphics/hero1_walk4_left.gif
+	right: graphics/hero1_walk1_right.gif, graphics/hero1_walk2_right.gif, graphics/hero1_walk3_right.gif, graphics/hero1_walk4_right.gif
 }
 
 #Action
@@ -60,10 +60,10 @@ y: 5
 facing: right
 is_ai: false
 stand_sprites: {
-	right: ../graphics/hero2_right.gif
-	left: ../graphics/hero2_right.gif
-	up: ../graphics/hero2_right.gif
-	down: ../graphics/hero2_right.gif
+	right: graphics/hero2_right.gif
+	left: graphics/hero2_right.gif
+	up: graphics/hero2_right.gif
+	down: graphics/hero2_right.gif
 }
 
 #Action
@@ -91,10 +91,10 @@ y: 6
 facing: right
 is_ai: false
 stand_sprites: {
-	right: ../graphics/hero3_right.gif
-	left: ../graphics/hero3_right.gif
-	up: ../graphics/hero3_right.gif
-	down: ../graphics/hero3_right.gif
+	right: graphics/hero3_right.gif
+	left: graphics/hero3_right.gif
+	up: graphics/hero3_right.gif
+	down: graphics/hero3_right.gif
 }
 
 #Action
@@ -127,31 +127,31 @@ y: 5
 facing: left
 is_ai: true
 stand_sprites: {
-	up: ../graphics/ai1_up.gif
-	down: ../graphics/ai1_down.gif
-	left: ../graphics/ai1_left.gif
-	right: ../graphics/ai1_right.gif
+	up: graphics/ai1_up.gif
+	down: graphics/ai1_down.gif
+	left: graphics/ai1_left.gif
+	right: graphics/ai1_right.gif
 }
 walk_sprites: {
-	up: ../graphics/ai1_walk1_up.gif, ../graphics/ai1_walk2_up.gif, ../graphics/ai1_walk3_up.gif, ../graphics/ai1_walk4_up.gif 
-	down: ../graphics/ai1_walk1_down.gif, ../graphics/ai1_walk2_down.gif, ../graphics/ai1_walk3_down.gif, ../graphics/ai1_walk4_down.gif
-	left: ../graphics/ai1_walk1_left.gif, ../graphics/ai1_walk2_left.gif, ../graphics/ai1_walk3_left.gif, ../graphics/ai1_walk4_left.gif
-	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
+	up: graphics/ai1_walk1_up.gif, graphics/ai1_walk2_up.gif, graphics/ai1_walk3_up.gif, graphics/ai1_walk4_up.gif 
+	down: graphics/ai1_walk1_down.gif, graphics/ai1_walk2_down.gif, graphics/ai1_walk3_down.gif, graphics/ai1_walk4_down.gif
+	left: graphics/ai1_walk1_left.gif, graphics/ai1_walk2_left.gif, graphics/ai1_walk3_left.gif, graphics/ai1_walk4_left.gif
+	right: graphics/ai1_walk1_right.gif, graphics/ai1_walk2_right.gif, graphics/ai1_walk3_right.gif, graphics/ai1_walk4_right.gif
 }
-
-#Action
-character: D
-type: damage
-strength: 35
-max_range: 1
-name: Hit  
 
 #Action
 character: D
 type: damage
 strength: 30
 max_range: 1
-name: Poke
+name: Hit  
+
+#Action
+character: D
+type: damage
+strength: 20
+max_range: 2
+name: Throw rock
 
 //------------------------------------------------------------------
 
@@ -164,29 +164,29 @@ y: 6
 facing: left
 is_ai: true
 stand_sprites: {
-	up: ../graphics/ai1_up.gif
-	down: ../graphics/ai1_down.gif
-	left: ../graphics/ai1_left.gif
-	right: ../graphics/ai1_right.gif
+	up: graphics/ai1_up.gif
+	down: graphics/ai1_down.gif
+	left: graphics/ai1_left.gif
+	right: graphics/ai1_right.gif
 }
 walk_sprites: {
-	up: ../graphics/ai1_walk1_up.gif, ../graphics/ai1_walk2_up.gif, ../graphics/ai1_walk3_up.gif, ../graphics/ai1_walk4_up.gif 
-	down: ../graphics/ai1_walk1_down.gif, ../graphics/ai1_walk2_down.gif, ../graphics/ai1_walk3_down.gif, ../graphics/ai1_walk4_down.gif
-	left: ../graphics/ai1_walk1_left.gif, ../graphics/ai1_walk2_left.gif, ../graphics/ai1_walk3_left.gif, ../graphics/ai1_walk4_left.gif
-	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
+	up: graphics/ai1_walk1_up.gif, graphics/ai1_walk2_up.gif, graphics/ai1_walk3_up.gif, graphics/ai1_walk4_up.gif 
+	down: graphics/ai1_walk1_down.gif, graphics/ai1_walk2_down.gif, graphics/ai1_walk3_down.gif, graphics/ai1_walk4_down.gif
+	left: graphics/ai1_walk1_left.gif, graphics/ai1_walk2_left.gif, graphics/ai1_walk3_left.gif, graphics/ai1_walk4_left.gif
+	right: graphics/ai1_walk1_right.gif, graphics/ai1_walk2_right.gif, graphics/ai1_walk3_right.gif, graphics/ai1_walk4_right.gif
 }
 
 #Action
 character: E
 type: damage
-strength: 35
+strength: 30
 max_range: 1
 name: Hit  
 
 #Action
 character: E
 type: damage
-strength: 30
+strength: 20
 max_range: 1
 name: Poke
 
@@ -201,28 +201,28 @@ y: 10
 facing: left
 is_ai: true
 stand_sprites: {
-	up: ../graphics/ai1_up.gif
-	down: ../graphics/ai1_down.gif
-	left: ../graphics/ai1_left.gif
-	right: ../graphics/ai1_right.gif
+	up: graphics/ai1_up.gif
+	down: graphics/ai1_down.gif
+	left: graphics/ai1_left.gif
+	right: graphics/ai1_right.gif
 }
 walk_sprites: {
-	up: ../graphics/ai1_walk1_up.gif, ../graphics/ai1_walk2_up.gif, ../graphics/ai1_walk3_up.gif, ../graphics/ai1_walk4_up.gif 
-	down: ../graphics/ai1_walk1_down.gif, ../graphics/ai1_walk2_down.gif, ../graphics/ai1_walk3_down.gif, ../graphics/ai1_walk4_down.gif
-	left: ../graphics/ai1_walk1_left.gif, ../graphics/ai1_walk2_left.gif, ../graphics/ai1_walk3_left.gif, ../graphics/ai1_walk4_left.gif
-	right: ../graphics/ai1_walk1_right.gif, ../graphics/ai1_walk2_right.gif, ../graphics/ai1_walk3_right.gif, ../graphics/ai1_walk4_right.gif
+	up: graphics/ai1_walk1_up.gif, graphics/ai1_walk2_up.gif, graphics/ai1_walk3_up.gif, graphics/ai1_walk4_up.gif 
+	down: graphics/ai1_walk1_down.gif, graphics/ai1_walk2_down.gif, graphics/ai1_walk3_down.gif, graphics/ai1_walk4_down.gif
+	left: graphics/ai1_walk1_left.gif, graphics/ai1_walk2_left.gif, graphics/ai1_walk3_left.gif, graphics/ai1_walk4_left.gif
+	right: graphics/ai1_walk1_right.gif, graphics/ai1_walk2_right.gif, graphics/ai1_walk3_right.gif, graphics/ai1_walk4_right.gif
 }
 
 #Action
 character: F
 type: damage
-strength: 35
+strength: 30
 max_range: 1
 name: Hit  
 
 #Action
 character: F
 type: damage
-strength: 30
+strength: 20
 max_range: 1
 name: Poke

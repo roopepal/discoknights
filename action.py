@@ -27,8 +27,8 @@ class Action(object):
         return self.character
     
     def perform(self, target_location):
-        current_location = self.character.get_location()                                                # NOTE: for range calculation
-        target_character = self.character.get_map().get_square_at(target_location).get_character()
+        current_location = self.character.location                                                # NOTE: for range calculation
+        target_character = self.character.map.get_square_at(target_location).character
         
         if not target_character:
             print("Missed!")
@@ -43,4 +43,5 @@ class Action(object):
                 print("Stunned {:} for {:} turns.".format(target_character, self.strength))
             return "Used '" + self.description + "' on " + self.character.map.get_square_at(target_location).character.name
         
-        
+    def __str__(self):
+        return self.description

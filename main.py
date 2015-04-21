@@ -188,7 +188,7 @@ def main():
     
     def render_bottom_bar(surface):        
         #blit background bar
-        bar = pygame.image.load("../graphics/bottom_bar.gif").convert()
+        bar = pygame.image.load("graphics/bottom_bar.gif").convert()
         for i in range(surface.get_width() // 4):
             surface.blit(bar, (i*4, 0))
     
@@ -208,7 +208,7 @@ def main():
         
     def render_action_menu(surface):
         # blit menu bg
-        actions_menu = pygame.image.load("../graphics/actions_menu.gif").convert_alpha()
+        actions_menu = pygame.image.load("graphics/actions_menu.gif").convert_alpha()
         surface.blit(actions_menu, (7, screen_h - 103))
         
         if selected_character:
@@ -242,7 +242,7 @@ def main():
     
     def render_effect_text(surface, count, text_surface):
         if text_surface:
-            scr_loc = map_to_screen(action_target_loc.x, action_target_loc.y)
+            scr_loc = map_to_screen(effect_text_loc.x, effect_text_loc.y)
             x = scr_loc[0] + 32 - text_surface.get_width()/2 + map_offset_x
             y = scr_loc[1] - 40 - count*1 + map_offset_y
             location = (x, y)
@@ -304,21 +304,21 @@ def main():
     ai = Ai(m)
     
     #set window size
-    screen_w = 960
-    screen_h = 576
+    screen_w = 1280
+    screen_h = 768
     screen = pygame.display.set_mode((screen_w, screen_h))
     
     #initiate fonts
-    font = pygame.font.Font("../coders_crux.ttf", 14)
-    med_font = pygame.font.Font("../coders_crux.ttf", 16)
+    font = pygame.font.Font("fonts/coders_crux.ttf", 14)
+    med_font = pygame.font.Font("fonts/coders_crux.ttf", 16)
     
     #load sprites
-    selected_img = pygame.image.load('../graphics/selected.gif').convert_alpha()
-    action_target_img = pygame.image.load('../graphics/action_selected.gif').convert_alpha()
-    heal_target_img = pygame.image.load('../graphics/heal_selected.gif').convert_alpha()
-    char_info = pygame.image.load("../graphics/char_info.gif").convert_alpha()
-    char_info_turn = pygame.image.load("../graphics/char_info_has_turn.gif").convert_alpha()
-    char_info_dead = pygame.image.load("../graphics/char_info_dead.gif").convert_alpha()
+    selected_img = pygame.image.load('graphics/selected.gif').convert_alpha()
+    action_target_img = pygame.image.load('graphics/action_selected.gif').convert_alpha()
+    heal_target_img = pygame.image.load('graphics/heal_selected.gif').convert_alpha()
+    char_info = pygame.image.load("graphics/char_info.gif").convert_alpha()
+    char_info_turn = pygame.image.load("graphics/char_info_has_turn.gif").convert_alpha()
+    char_info_dead = pygame.image.load("graphics/char_info_dead.gif").convert_alpha()
     sprites = load_sprites()
     
     #prepare the map and rendering offsets
@@ -346,7 +346,6 @@ def main():
     
     #prepare the game loop control variables
     done = False
-    selected_square_inside_map = False
     selected_character = m.turn_controller.current_character
     selected_action = None
     mouse_pos = None
@@ -360,7 +359,9 @@ def main():
     dirty_rects = []
     refresh_map = False
     walk = False
+    action = False
     path_to_move = False
+    square_clicked = None
     
     '''Initial render'''
     screen.fill((0,0,0))
@@ -371,24 +372,60 @@ def main():
         
     in_menu = True
     paused = False
-          
-    #debug milliseconds from last frame
+    plr_won = False    
+    ai_won = False
+    
+    #milliseconds from last frame
     new_time, old_time = None, None    
     
-    
-    #----------------------------------------------------------------------------------------
+    #set a wait timer to leave time between AI actions
+    ai_delay = 1000
+    wait_ms = False
+
     
     ''' start main loop '''
     while not done:
-            
+        
+        #print(str(selected_character), str(selected_action), str(len(within_range)), str(walk), str(action))
+        
         clock.tick(fps)
         dirty_rects = []
         did_update_already = False
         
-        '''Render menu if game is in menu'''
+        #recognize winner
+        plr_characters_alive = 0
+        ai_characters_alive = 0
+        for c in m.characters:
+            if not c.ai and not c.dead:
+                plr_characters_alive += 1
+            elif c.ai and not c.dead:
+                ai_characters_alive += 1
+        if plr_characters_alive == 0:
+            ai_won = True
+            in_menu = True
+        elif ai_characters_alive == 0:
+            plr_won = True
+            in_menu = True
+            
+        #------------------------------------------------------------------------------------------------------------------------------
+        # Menu loop
+        
         while in_menu:
             #draw menu and options    
             screen.fill((0, 0, 0))
+            
+            if plr_won or ai_won:
+                if plr_won:
+                    winner = ui.super_large_font.render("You won!", True, (255,255,255))
+                else:
+                    winner = ui.super_large_font.render("You lost!", True, (255,255,255))
+                winner_rect = winner.get_rect()
+                winner_rect.centerx = screen.get_rect().centerx
+                winner_rect.y = 20
+                screen.blit(winner, winner_rect)
+                
+                #prevent action effect text from showing after pressing new game
+                effect_text = None
             
             if paused:
                 resume = ui.large_font.render("Press Esc to resume game.", True, (255,255,255))
@@ -408,7 +445,8 @@ def main():
                 if event.type == pygame.QUIT:
                     in_menu = False
                     done = True
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and paused:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and paused and not (plr_won or ai_won):
+                    paused = False
                     in_menu = False
                     refresh_map = True
                 if event.type == pygame.MOUSEBUTTONUP:
@@ -446,13 +484,16 @@ def main():
                 
             pygame.display.update()
         
+        #------------------------------------------------------------------------------------------------------------------------------
+        # The actual game
+        
         if refresh_map:
             screen.fill((0,0,0))
-            #map, range and characters
+            # map, range and characters
             dirty_rects.append(blit_map(screen).inflate(20,20))
             render_range(screen)
             render_characters_and_objects(screen)
-            #menu elements
+            # menu elements
             screen.blit(bottom_bar, (0, screen_h-28))
             if saved_text:
                 text_to_display = saved_text
@@ -481,31 +522,33 @@ def main():
                 map_offset_y += 10
                 refresh_map = True
         
+        
+        '''Handle mouse and keyboard events'''
+        
         for event in pygame.event.get():
+            # Quit if window is closed
             if event.type == pygame.QUIT:
                 done = True
                 
-            '''Use Esc to go into pause menu'''
+            # Use Esc to go into pause menu
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 in_menu = True
                 paused = True
+                continue
                 
-            #if not in menu
+            # If not in menu
             else:
-                '''Get mouse position'''
-            
                 # get mouse position and convert to cartesian coordinates
                 mouse_pos = pygame.mouse.get_pos()
                 mx = mouse_pos[0]
                 my = mouse_pos[1]
             
-            
-                '''Update buttons if mouse moves in or out'''
-            
+                # Update buttons if mouse moves in or out
+                # End button
                 if ( (end_turn_button.hovered and not end_turn_button.rect.collidepoint((mx,my))) or (not end_turn_button.hovered and end_turn_button.rect.collidepoint((mx,my))) ):  
                     dirty_rects.append(render_end_turn_button(screen))
-            
                 else:
+                    # Action buttons
                     for button in use_buttons:
                         if (button.hovered and not button.rect.collidepoint((mx,my))) or (not button.hovered and button.rect.collidepoint((mx,my))):
                             use_buttons = render_action_menu(screen)
@@ -513,117 +556,97 @@ def main():
                                 dirty_rects.append(button.rect)  
                 
             
-                '''Handle mouse clicks'''
-            
+                # Handle mouse clicks
                 if event.type == pygame.MOUSEBUTTONUP:
-                    # reset button states
+                    # Reset button states
                     end_turn_button.pushed = False
                     for use_btn in use_buttons:
                         use_btn.pushed = False
                 
-                    '''If End Turn was clicked, or if a Use action button was clicked'''
-                
-                    # recognize end turn button
+                    # Recognize end turn button
                     if end_turn_button.rect.collidepoint((mx,my)):
-                        #get current and next character
+                        # get current and next character
                         old_character = selected_character
                         text_to_display = m.turn_controller.current_character.end_turn()
                         selected_character = m.turn_controller.current_character
-                        
                         # update range with new character
                         if not selected_character.ai:
                             within_range = selected_character.within_range(selected_character.range)
                         else:
                             within_range = []
-                        # get the square where the character for next turn is
-                        square = m.get_square_at(selected_character.location)
+                          
                         selected_action = None
                         refresh_map = True
+                        wait_ms = ai_delay
                         continue
                     
-                    #recognize action use buttons
+                    # recognize action use buttons
                     else:
                         for use_btn in use_buttons:
                             if use_btn.rect.collidepoint((mx,my)):
                                 selected_action = selected_character.actions[use_buttons.index(use_btn)]
                                 within_range = selected_character.within_range(selected_action.range, for_action = True)
+                                selected_character.has_moved = True
                                 refresh_map = True
                                 break
                 
-                
-                    '''Convert clicked coordinates to game map coordinates'''
-                
+                    # Convert clicked coordinates to game map coordinates
                     # map mouse x = mmx, map mouse y = mmy, i.e. which square on the map was clicked
                     mouse_pos_map = screen_to_map(mx,my, map_offset_x, map_offset_y)
                     mmx = mouse_pos_map[0]
                     mmy = mouse_pos_map[1]
                 
+                    # Handle game events resulting from clicks: set movement or action target square
                 
-                    '''Handle game events resulting from clicks'''
-                
-                    # if the click was inside the map
-                    if ( 0 <= mmx < m.get_width() ) and ( 0 <= mmy < m.get_height() ): 
-                        selected_square_inside_map = True
-                
-                    # if there is a square at the selected map coordinates
+                    # if there is a square at the selected coordinates, i.e. if the click was inside the map
                     if m.get_square_at(Coordinates(mmx, mmy)):
-                        square = m.get_square_at(Coordinates(mmx, mmy))
+                        square_clicked = m.get_square_at(Coordinates(mmx, mmy))
                     
-                        # if an empty square was clicked
-                        if not square in within_range:
-                            #selected_character = None
+                        # if a square outside range was clicked
+                        if not square_clicked in within_range:
                             text_to_display = "Not within range."
                             continue
-                        
-                        '''Use action if an action was selected, otherwise move'''
-                    
-                        if selected_action:
-                            if square in within_range:
-                                # set the correct facing direction for the attacking character
-                                if square.location.x == selected_character.location.x and square.location.y < selected_character.location.y:
-                                    selected_character.facing = direction.UP
-                                elif square.location.x == selected_character.location.x and square.location.y > selected_character.location.y:
-                                    selected_character.facing = direction.DOWN
-                                elif square.location.x < selected_character.location.x and square.location.y == selected_character.location.y:
-                                    selected_character.facing = direction.LEFT
-                                elif square.location.x > selected_character.location.x and square.location.y == selected_character.location.y:
-                                    selected_character.facing = direction.RIGHT
-                                
-                                # if there's a character in the target square
-                                text_to_display = selected_action.perform(square.location)
-                                action_target_loc = square.location
-                                if square.has_character():
-                                    effect_text = get_effect_text(selected_action)
-                                selected_action = None
-                                #update character infos for current character, action target character, and the next turn character
-                                old_character = selected_character
-                                selected_character.end_turn()
-                                selected_character = m.turn_controller.current_character
-                                dirty_rects += render_char_info(screen,[square.character, selected_character, old_character])
-                                #clear range
-                                within_range = selected_character.within_range(selected_character.range)
-                                refresh_map = True
-                                continue
-                    
-                        elif square in within_range and selected_character.has_turn():
-                            target_map_loc = Coordinates(mmx,mmy)
+                        # if square inside range and the character has not moved, set walk target
+                        elif selected_character.has_turn() and not selected_character.has_moved:
+                            target_map_loc = Coordinates(mmx, mmy)
                             walk = True
+                        # if an action was selected and the square clicked is in the action range
+                        elif selected_action and square_clicked in within_range:
+                            target_map_loc = Coordinates(mmx, mmy)
+                            action = True
         
         
+        '''if AI's turn, get AI movement or action'''
         
-        
-        '''if AI's turn, get AI movement'''
-        if selected_character.ai and not selected_character.has_moved:
+        # get movement if the AI character has not moved
+        if selected_character.ai and not selected_character.has_moved and not wait_ms:
             target_map_loc = ai.get_next_move()
-            print(str(selected_character) + " moving to " + str(target_map_loc))
             # If gets a target, move, otherwise proceed to action
             if target_map_loc:
+                print(str(selected_character) + " moving to " + str(target_map_loc))
                 walk = True
             else:
                 selected_character.has_moved = True
-            #else:
-            #    selected_character.end_turn()
-            #    selected_character = m.turn_controller.current_character
+        # get action if the AI character has moved
+        elif selected_character.ai and selected_character.has_moved and not wait_ms:
+            selected_action, target_map_loc = ai.get_action()
+            # If gets a target, perform the action, else end turn
+            if target_map_loc:
+                action = True
+                print(str(selected_character) + " chose action " + str(selected_action) + " to use on location " + str(target_map_loc))
+            else:
+                #update character infos for current character, action target character, and the next turn character
+                old_character = selected_character
+                selected_character.end_turn()
+                selected_character = m.turn_controller.current_character
+            
+                dirty_rects += render_char_info(screen, [selected_character, old_character])
+                #clear range
+                within_range = selected_character.within_range(selected_character.range)
+                refresh_map = True
+                continue
+        
+        '''Walk, if a walk target was set'''
         
         if walk:
             # remove range
@@ -665,6 +688,10 @@ def main():
                     facing = "right"
             
                 dirty_rects_moving = []
+                
+                #------------------------------------------------------------------------------------------------------------------------------
+                # Walk loop
+                
                 # while the character has not reached the target
                 while not current_scr_loc == step_scr_target:
                     clock.tick(0)
@@ -715,15 +742,15 @@ def main():
                     pygame.display.update(dirty_rects_moving)
                     #did_update_already = True
                     dirty_rects_moving = []
-            
+                
+                # walk loop end
+                #------------------------------------------------------------------------------------------------------------------------------
+                    
                 #move in the background logic
                 selected_character.move_to_coordinates(step)
                 
+            # if all steps were successful    
             else:
-                #selected_character.end_turn()                   #TODO this will not update range for 1st character
-                #selected_character = m.turn_controller.current_character
-                #within_range = selected_character.within_range(selected_character.range)
-                
                 blit_map(screen)
                 dirty_rects += render_characters_and_objects(screen)
                 pygame.display.update(dirty_rects)
@@ -732,16 +759,57 @@ def main():
             refresh_map = True
             path_to_move = False
             walk = False
-            #did_update_already = True    
             
+            if selected_character.ai:
+                wait_ms = ai_delay
+            
+            #did_update_already = True    
+        
         # don't display range after the character has moved
-        if selected_character.has_moved:
-            within_range = []    
-                
-                
-                
-                
-                
+        if selected_character.has_moved and not selected_action:
+            within_range = []
+        
+            
+        '''If an action target was set'''
+        
+        if action:
+            square = m.get_square_at(target_map_loc)
+            
+            # set the correct facing direction for the attacking character
+            if target_map_loc.x == selected_character.location.x and target_map_loc.y < selected_character.location.y:
+                selected_character.facing = direction.UP
+            elif target_map_loc.x == selected_character.location.x and target_map_loc.y > selected_character.location.y:
+                selected_character.facing = direction.DOWN
+            elif target_map_loc.x < selected_character.location.x and target_map_loc.y == selected_character.location.y:
+                selected_character.facing = direction.LEFT
+            elif target_map_loc.x > selected_character.location.x and target_map_loc.y == selected_character.location.y:
+                selected_character.facing = direction.RIGHT
+            
+            # perform action
+            text_to_display = selected_action.perform(target_map_loc)
+            # display red or green text with action strength above the action target
+            effect_text_loc = target_map_loc
+            if square.has_character():
+                effect_text = get_effect_text(selected_action)
+            # reset selected action
+            selected_action = None
+            action = False
+            #update character infos for current character, action target character, and the next turn character
+            old_character = selected_character
+            selected_character.end_turn()
+            selected_character = m.turn_controller.current_character
+            
+            dirty_rects += render_char_info(screen,[square.character, selected_character, old_character])
+            #clear range
+            within_range = selected_character.within_range(selected_character.range)
+            refresh_map = True
+            
+            if old_character.ai:
+                wait_ms = ai_delay
+            
+            #continue
+        
+   
                 
         
         if effect_text:
@@ -781,6 +849,11 @@ def main():
         
         #print([str(r) for r in dirty_rects])
         pygame.display.update(dirty_rects)
+        
+        if wait_ms > 0:
+            wait_ms -= (new_time - old_time)
+        elif wait_ms <= 0:
+            wait_ms = False
         
     pygame.quit()
     sys.exit()
