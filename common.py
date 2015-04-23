@@ -46,7 +46,7 @@ def reset_screen():
 		pygame.init()
 		
 	# set screen
-	screen = pygame.display.set_mode( options.window_size, pygame.DOUBLEBUFdiscoknights )
+	screen = pygame.display.set_mode( options.window_size )
 	# fill with black
 	screen.fill( (0,0,0) )
 	
