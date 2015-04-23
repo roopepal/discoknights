@@ -1,4 +1,4 @@
-class Turn(object):
+class TurnController(object):
     
     def __init__(self, current_map):
         self.map = current_map

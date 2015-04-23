@@ -34,26 +34,13 @@ class Map(object):
                     self.squares[y][x] = Square(Coordinates(x,y), self.squaretypes[input_parts[0]])
                 if len(input_parts) > 1:
                     self.add_object(MapObject(self.object_types[input_parts[1]]), Coordinates(x,y))
-                    
-    def get_width(self):
-        return self.width
-    
-    def get_height(self):
-        return self.height
-    
-    def get_squares(self):
-        return self.squares
     
     def get_square_at(self, coordinates):
         if self.contains_coordinates(coordinates):
             return self.squares[coordinates.get_y()][coordinates.get_x()]
         else:
-            # raise an error
-            # print("Cannot get square from outside the map.")
+            print("Cannot get square from outside the map.")
             return False
-    
-    def get_squaretypes(self):
-        return self.squaretypes
     
     def add_squaretype(self, squaretype):
         if not squaretype.short in self.squaretypes:

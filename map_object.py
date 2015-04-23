@@ -17,4 +17,4 @@ class MapObject(object):
         self.location = location
 
     def __str__(self):
-        return self.type.short
+        return self.type.name

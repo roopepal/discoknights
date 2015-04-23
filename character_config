@@ -16,16 +16,16 @@ y: 4
 facing: right
 is_ai: false
 stand_sprites: {
-	up: graphics/hero1_up.gif
-	down: graphics/hero1_down.gif
-	left: graphics/hero1_left.gif
-	right: graphics/hero1_right.gif
+	up: hero1_up.gif
+	down: hero1_down.gif
+	left: hero1_left.gif
+	right: hero1_right.gif
 }
 walk_sprites: {
-	up: graphics/hero1_walk1_up.gif, graphics/hero1_walk2_up.gif, graphics/hero1_walk3_up.gif, graphics/hero1_walk4_up.gif 
-	down: graphics/hero1_walk1_down.gif, graphics/hero1_walk2_down.gif, graphics/hero1_walk3_down.gif, graphics/hero1_walk4_down.gif
-	left: graphics/hero1_walk1_left.gif, graphics/hero1_walk2_left.gif, graphics/hero1_walk3_left.gif, graphics/hero1_walk4_left.gif
-	right: graphics/hero1_walk1_right.gif, graphics/hero1_walk2_right.gif, graphics/hero1_walk3_right.gif, graphics/hero1_walk4_right.gif
+	up: hero1_walk1_up.gif, hero1_walk2_up.gif, hero1_walk3_up.gif, hero1_walk4_up.gif 
+	down: hero1_walk1_down.gif, hero1_walk2_down.gif, hero1_walk3_down.gif, hero1_walk4_down.gif
+	left: hero1_walk1_left.gif, hero1_walk2_left.gif, hero1_walk3_left.gif, hero1_walk4_left.gif
+	right: hero1_walk1_right.gif, hero1_walk2_right.gif, hero1_walk3_right.gif, hero1_walk4_right.gif
 }
 
 #Action
@@ -60,10 +60,10 @@ y: 5
 facing: right
 is_ai: false
 stand_sprites: {
-	right: graphics/hero2_right.gif
-	left: graphics/hero2_right.gif
-	up: graphics/hero2_right.gif
-	down: graphics/hero2_right.gif
+	right: hero2_right.gif
+	left: hero2_right.gif
+	up: hero2_right.gif
+	down: hero2_right.gif
 }
 
 #Action
@@ -91,10 +91,10 @@ y: 6
 facing: right
 is_ai: false
 stand_sprites: {
-	right: graphics/hero3_right.gif
-	left: graphics/hero3_right.gif
-	up: graphics/hero3_right.gif
-	down: graphics/hero3_right.gif
+	right: hero3_right.gif
+	left: hero3_right.gif
+	up: hero3_right.gif
+	down: hero3_right.gif
 }
 
 #Action
@@ -127,16 +127,16 @@ y: 5
 facing: left
 is_ai: true
 stand_sprites: {
-	up: graphics/ai1_up.gif
-	down: graphics/ai1_down.gif
-	left: graphics/ai1_left.gif
-	right: graphics/ai1_right.gif
+	up: ai1_up.gif
+	down: ai1_down.gif
+	left: ai1_left.gif
+	right: ai1_right.gif
 }
 walk_sprites: {
-	up: graphics/ai1_walk1_up.gif, graphics/ai1_walk2_up.gif, graphics/ai1_walk3_up.gif, graphics/ai1_walk4_up.gif 
-	down: graphics/ai1_walk1_down.gif, graphics/ai1_walk2_down.gif, graphics/ai1_walk3_down.gif, graphics/ai1_walk4_down.gif
-	left: graphics/ai1_walk1_left.gif, graphics/ai1_walk2_left.gif, graphics/ai1_walk3_left.gif, graphics/ai1_walk4_left.gif
-	right: graphics/ai1_walk1_right.gif, graphics/ai1_walk2_right.gif, graphics/ai1_walk3_right.gif, graphics/ai1_walk4_right.gif
+	up: ai1_walk1_up.gif, ai1_walk2_up.gif, ai1_walk3_up.gif, ai1_walk4_up.gif 
+	down: ai1_walk1_down.gif, ai1_walk2_down.gif, ai1_walk3_down.gif, ai1_walk4_down.gif
+	left: ai1_walk1_left.gif, ai1_walk2_left.gif, ai1_walk3_left.gif, ai1_walk4_left.gif
+	right: ai1_walk1_right.gif, ai1_walk2_right.gif, ai1_walk3_right.gif, ai1_walk4_right.gif
 }
 
 #Action
@@ -164,16 +164,16 @@ y: 6
 facing: left
 is_ai: true
 stand_sprites: {
-	up: graphics/ai1_up.gif
-	down: graphics/ai1_down.gif
-	left: graphics/ai1_left.gif
-	right: graphics/ai1_right.gif
+	up: ai1_up.gif
+	down: ai1_down.gif
+	left: ai1_left.gif
+	right: ai1_right.gif
 }
 walk_sprites: {
-	up: graphics/ai1_walk1_up.gif, graphics/ai1_walk2_up.gif, graphics/ai1_walk3_up.gif, graphics/ai1_walk4_up.gif 
-	down: graphics/ai1_walk1_down.gif, graphics/ai1_walk2_down.gif, graphics/ai1_walk3_down.gif, graphics/ai1_walk4_down.gif
-	left: graphics/ai1_walk1_left.gif, graphics/ai1_walk2_left.gif, graphics/ai1_walk3_left.gif, graphics/ai1_walk4_left.gif
-	right: graphics/ai1_walk1_right.gif, graphics/ai1_walk2_right.gif, graphics/ai1_walk3_right.gif, graphics/ai1_walk4_right.gif
+	up: ai1_walk1_up.gif, ai1_walk2_up.gif, ai1_walk3_up.gif, ai1_walk4_up.gif 
+	down: ai1_walk1_down.gif, ai1_walk2_down.gif, ai1_walk3_down.gif, ai1_walk4_down.gif
+	left: ai1_walk1_left.gif, ai1_walk2_left.gif, ai1_walk3_left.gif, ai1_walk4_left.gif
+	right: ai1_walk1_right.gif, ai1_walk2_right.gif, ai1_walk3_right.gif, ai1_walk4_right.gif
 }
 
 #Action
@@ -201,16 +201,16 @@ y: 10
 facing: left
 is_ai: true
 stand_sprites: {
-	up: graphics/ai1_up.gif
-	down: graphics/ai1_down.gif
-	left: graphics/ai1_left.gif
-	right: graphics/ai1_right.gif
+	up: ai1_up.gif
+	down: ai1_down.gif
+	left: ai1_left.gif
+	right: ai1_right.gif
 }
 walk_sprites: {
-	up: graphics/ai1_walk1_up.gif, graphics/ai1_walk2_up.gif, graphics/ai1_walk3_up.gif, graphics/ai1_walk4_up.gif 
-	down: graphics/ai1_walk1_down.gif, graphics/ai1_walk2_down.gif, graphics/ai1_walk3_down.gif, graphics/ai1_walk4_down.gif
-	left: graphics/ai1_walk1_left.gif, graphics/ai1_walk2_left.gif, graphics/ai1_walk3_left.gif, graphics/ai1_walk4_left.gif
-	right: graphics/ai1_walk1_right.gif, graphics/ai1_walk2_right.gif, graphics/ai1_walk3_right.gif, graphics/ai1_walk4_right.gif
+	up: ai1_walk1_up.gif, ai1_walk2_up.gif, ai1_walk3_up.gif, ai1_walk4_up.gif 
+	down: ai1_walk1_down.gif, ai1_walk2_down.gif, ai1_walk3_down.gif, ai1_walk4_down.gif
+	left: ai1_walk1_left.gif, ai1_walk2_left.gif, ai1_walk3_left.gif, ai1_walk4_left.gif
+	right: ai1_walk1_right.gif, ai1_walk2_right.gif, ai1_walk3_right.gif, ai1_walk4_right.gif
 }
 
 #Action

@@ -24,25 +24,6 @@ class Character(object):
         self.ai = is_ai
         self.has_moved = False
         self.dead = False
-
-    def get_all(self): #DEBUG METHOD
-        ret = self.get_name() + str(self.get_location()) + str(self.get_facing())
-        return ret
-        
-    def get_name(self):
-        return self.name
-    
-    def get_location(self):
-        return self.location
-    
-    def get_facing(self):
-        return self.facing
-    
-    def set_facing(self, direction):
-        self.facing = direction
-    
-    def get_map(self):
-        return self.map
     
     def added_to_map(self, current_map, location, facing):
         '''Takes care of updating the character attributes when the character is added to a map.'''
@@ -199,7 +180,6 @@ class Character(object):
     def move_forward(self):
         '''
 		Moves one step to the direction the character is facing.
-		A helper method for move_to_coordinates().
 		'''
         target_location = self.get_location().get_neighbor(self.get_facing())
         target_square = self.map.get_square_at(target_location)

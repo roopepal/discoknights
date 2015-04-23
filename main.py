@@ -11,14 +11,13 @@ from squaretype import SquareType
 import ui
 
 def main():
-	def get_screen():
-		return screen
-		
+	'''
 	def map_to_screen(x,y, offset_x=0, offset_y=0):
 		screen_x = (x - y) * (tile_w / 2) + offset_x
 		screen_y = (x + y) * (tile_h / 2) + offset_y
 		return screen_x, screen_y
-	
+	'''
+	'''
 	def screen_to_map(x,y, offset_x=0, offset_y=0):
 		x -= ( offset_x + tile_w / 2 )
 		y -= offset_y
@@ -30,13 +29,7 @@ def main():
 		if map_y < 0:
 			map_y -= 1	  
 		return int(map_x), int(map_y)
-
-	def square_clicked(screen_x, screen_y):
-		x = screen_x
-		y = screen_y
-		map_x = ( x / (tile_w / 2) + y / (tile_h / 2) ) / 2
-		map_y = ( y / (tile_h / 2) - (y / (tile_w / 2)) ) / 2
-		return (map_x, map_y)
+	'''
 	
 	def load_sprites():
 		sprites = {}
@@ -52,7 +45,7 @@ def main():
 			if m.object_types[object_type].sprite not in sprites:
 				sprites[m.object_types[object_type].sprite] = pygame.image.load(m.object_types[object_type].sprite).convert_alpha()
 				print("Successfully loaded sprite '{:}'".format(m.object_types[object_type].sprite))
-				
+		'''		
 		# For each character, load all sprites that are not already loaded
 		for character in m.characters:
 			for sprite in character.stand_sprites:
@@ -66,8 +59,10 @@ def main():
 						sprites[sprite] = pygame.image.load(sprite).convert_alpha()
 						print("Successfully loaded sprite '{:}'".format(sprite))
 		
+		'''
 		return sprites
-	
+		
+	'''
 	def render_squares(surface):		
 		surface.fill((0,0,0))
 		for x in range(m.width):
@@ -75,7 +70,8 @@ def main():
 				square = m.get_square_at(Coordinates(x,y))
 				screen_x, screen_y = map_to_screen(x,y)
 				surface.blit(sprites[square.squaretype.sprite], (screen_x + map_offset_x, screen_y))
-	
+	'''
+	'''
 	def render_range(surface):
 		for sq in within_range:
 			sq_mx, sq_my = sq.location.x, sq.location.y
@@ -87,6 +83,7 @@ def main():
 					surface.blit( action_target_img, (sq_sx, sq_sy) )
 			else:
 				surface.blit( selected_img, (sq_sx, sq_sy) )
+	'''
 	
 	def render_characters_and_objects(surface, walking=None, scr_loc=None, sprite_counter=None):
 		# collect dirty rects
@@ -304,8 +301,8 @@ def main():
 	ai = Ai(m)
 	
 	#set window size
-	screen_w = 1280
-	screen_h = 768
+	#screen_w = 1280
+	#screen_h = 768
 	screen = pygame.display.set_mode((screen_w, screen_h))
 	
 	#initiate fonts
@@ -322,10 +319,10 @@ def main():
 	sprites = load_sprites()
 	
 	#prepare the map and rendering offsets
-	tile_w = 64
-	tile_h = 32
-	map_w = (m.width + m.height) * tile_w / 2
-	map_h = (m.width + m.height) * tile_h / 2 + 8
+	#tile_w = 64
+	#tile_h = 32
+	#map_w = (m.width + m.height) * tile_w / 2
+	#map_h = (m.width + m.height) * tile_h / 2 + 8
 	map_offset_x = map_w / 2 - tile_w / 2
 	map_offset_y = 0
 	character_offset_x = 13

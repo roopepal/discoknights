@@ -9,14 +9,8 @@ class Coordinates(object):
         self.x = x
         self.y = y
     
-    def get_x(self):
-        return self.x
-    
-    def get_y(self):
-        return self.y
-    
     def get_neighbor(self, direction):
-        return Coordinates(self.get_x() + x_step(direction), self.get_y() + y_step(direction))
+        return Coordinates(self.x + x_step(direction), self.y + y_step(direction))
     
     def get_neighbors(self):
         return [ self.get_neighbor(direction) for direction in get_directions() ]
