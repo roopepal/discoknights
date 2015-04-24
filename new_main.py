@@ -1,7 +1,8 @@
 from common import *
 from config_reader import ConfigReader
-from new_map import Map
 import pygame, sys
+
+
 
 
 
@@ -26,19 +27,21 @@ def do_cprofile(func):
 
 
 
-def main():			
+def main():
 	
 	pygame.init()
 	clock = pygame.time.Clock()
 	fps = 60
 	
-	# initialize
 	reset_screen()
 	
-	# build from config, return map
-	mp = build()
+	m = build()
+	
+
+	#m.view.render_movement_range()
 	
 	done = False
+	
 	while not done:
 		
 		clock.tick(fps)

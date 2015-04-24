@@ -1,5 +1,5 @@
 from square import Square
-from common import *
+from common import reset_screen
 from constants import *
 from coordinates import Coordinates
 from map_object import MapObject

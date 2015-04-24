@@ -142,6 +142,7 @@ class ConfigReader(object):
 			
 			elif item["id"].lower() == "map":
 				print("Building map...")
+				print(item["squares"])
 				m.build_map(
 					int( item["height"] ), 
 					int( item["width"] ), 
