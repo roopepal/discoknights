@@ -34,6 +34,9 @@ class Character(object):
 		self.map = current_map
 		self.coordinates = coordinates
 		self.facing = facing
+		
+		
+	def set_view(self):
 		# initiate CharacterView
 		self.view = CharacterView(self)
 
@@ -303,7 +306,13 @@ class CharacterView(object):
 		screen_x, screen_y = map_to_screen(map_pos.x, map_pos.y)
 		# add horizontal draw offset to prevent negative x coordinates
 		screen_x += self.character.map.view.draw_offset_x
+		# add map offset on screen
+		screen_x += self.character.map.view.rect.topleft[0]
+		screen_y += self.character.map.view.rect.topleft[1]
 		# set position on screen
 		self.rect.x = screen_x + self.draw_offset_x
 		self.rect.y = screen_y + self.draw_offset_y
+		
+	def draw(self):
+		self.character.map.view.screen.blit(self.image, self.rect)
 

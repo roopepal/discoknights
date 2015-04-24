@@ -1,15 +1,7 @@
-from new_character import Character, CharacterView
 from common import *
 from config_reader import ConfigReader
-from coordinates import Coordinates
-import direction
-from new_map import Map, MapView
-from object_type import ObjectType
+from new_map import Map
 import pygame, sys
-from squaretype import SquareType
-from options import *
-
-
 
 
 
@@ -29,36 +21,24 @@ def do_cprofile(func):
 			ps.sort_stats('cumtime').print_stats()
 	return profiled_func
 
+#@do_cprofile
 
 
-@do_cprofile
 
 
 def main():			
 	
 	pygame.init()
 	clock = pygame.time.Clock()
-	fps = 1000
+	fps = 60
 	
+	# initialize
 	reset_screen()
 	
-	#read config from files
-	r = ConfigReader()
-	f = open('map_config', 'r')
-	map_config = r.read_config(f)
-	f.close()
-	f = open('character_config', 'r')
-	character_config = r.read_config(f)
-	f.close()
-	
-	m = r.build_from_config(map_config, character_config)
-
-	
-	#milliseconds from last frame
-	new_time, old_time = None, None	   
+	# build from config, return map
+	mp = build()
 	
 	done = False
-	
 	while not done:
 		
 		clock.tick(fps)
@@ -67,13 +47,12 @@ def main():
 			if event.type == pygame.QUIT:
 				done = True
 		
-		# show fps and milliseconds
-		if new_time:
-			old_time = new_time
-		new_time = pygame.time.get_ticks()
-		if new_time and old_time:
-			pygame.display.set_caption("fps: " + str(int(clock.get_fps())) + " ms: " + str(new_time-old_time))
 		
+		game_loop(m)
+		
+		
+		
+		print("fps: " + str(int(clock.get_fps())))
 		pygame.display.update()
 		
 	pygame.quit()

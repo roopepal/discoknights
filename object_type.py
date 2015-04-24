@@ -3,7 +3,7 @@ class ObjectType(object):
     Defines a map object type.
     '''
     
-    def __init__(self, name, short, sprite, offset_x, offset_y):
+    def __init__(self, name, short, sprite_path, offset_x, offset_y):
         '''
         Creates a new square type.
         
@@ -13,7 +13,7 @@ class ObjectType(object):
         '''
         self.name = name
         self.short = short
-        self.sprite = sprite
+        self.sprite_path = sprite_path
         self.offset_x = offset_x
         self.offset_y = offset_y
 

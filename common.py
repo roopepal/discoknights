@@ -1,6 +1,8 @@
 import pygame
 import options
+from config_reader import ConfigReader
 from constants import *
+from coordinates import Coordinates
 
 def map_to_screen(map_x, map_y):
 	screen_x = (map_x - map_y) * (TILE_W / 2)
@@ -19,25 +21,24 @@ def screen_to_map(screen_x, screen_y, offset_x=0, offset_y=0):
 		map_y -= 1	  
 	return int(map_x), int(map_y)
 	
-
-	
 	#map.x = (screen.x / TILE_WIDTH_HALF + screen.y / TILE_HEIGHT_HALF) /2;
 	#map.y = (screen.y / TILE_HEIGHT_HALF -(screen.x / TILE_WIDTH_HALF)) /2;
 
-
-def load_sprites(map):
-	# For each squaretype
-	for squaretype in m.squaretypes:
-		sprites[m.squaretypes[squaretype].sprite] = pygame.image.load(m.squaretypes[squaretype].sprite).convert_alpha()
+def build():
+	# read config from files
+	r = ConfigReader()
+	f = open(MAP_CONFIG, 'r')
+	map_config = r.read_config(f)
+	f.close()
+	f = open(CHARACTER_CONFIG, 'r')
+	character_config = r.read_config(f)
+	f.close()
 	
-	# For each object type
-	for object_type in m.object_types:
-		sprites[m.object_types[object_type].sprite] = pygame.image.load(m.object_types[object_type].sprite).convert_alpha()
-
-
-
-
-
+	# build map and characters
+	m = r.build_from_config(map_config, character_config)
+	
+	# return built map
+	return m
 
 
 def reset_screen():
@@ -46,8 +47,25 @@ def reset_screen():
 		pygame.init()
 		
 	# set screen
+	#flags = pygame.FULLSCREEN | pygame.DOUBLEBUF
 	screen = pygame.display.set_mode( options.window_size )
 	# fill with black
-	screen.fill( (0,0,0) )
+	screen.fill(BLACK)
 	
 	return screen
+
+	
+def game_loop(mp):
+	# draw map and possible range indicators
+	mp.view.draw()
+	
+	# draw characters and objects in proper order for correct depth
+	for x in range(mp.width):
+		for y in range(mp.height):
+			square = mp.get_square_at(Coordinates(x,y))
+			character = square.character
+			map_object = square.object 
+			if character:
+				character.view.draw()
+			if map_object:
+				map_object.view.draw()
