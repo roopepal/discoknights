@@ -1,64 +1,43 @@
-from common import *
-from config_reader import ConfigReader
+from common import reset_screen
+from config_reader import build
+from constants import FPS
+from event_handler import GameEventHandler
+from new_map import Map, MapView
+from state import GameState, MainMenuState
 import pygame, sys
-
-
-
-
-
-import cProfile, pstats
-
-def do_cprofile(func):
-	def profiled_func(*args, **kwargs):
-		profile = cProfile.Profile()
-		try:
-			profile.enable()
-			result = func(*args, **kwargs)
-			profile.disable()
-			return result
-		finally:
-			ps = pstats.Stats(profile)
-			ps.strip_dirs()
-			ps.sort_stats('cumtime').print_stats()
-	return profiled_func
-
-#@do_cprofile
-
-
 
 
 def main():
 	
 	pygame.init()
 	clock = pygame.time.Clock()
-	fps = 60
 	
+	# Initialize screen and set display mode
 	reset_screen()
 	
+	# Build the map from config files
 	m = build()
 	
-
-	#m.view.render_movement_range()
+	# Initialize game states
+	game = GameState(m)
+	main_menu = MainMenuState()
 	
-	done = False
+	# set current state
+	state = main_menu
 	
-	while not done:
+	while 1:
 		
-		clock.tick(fps)
+		clock.tick(FPS)
 		
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				done = True
+		state.handle_events()
+		state.update()
+		state.render()
 		
-		
-		game_loop(m)
-		
-		
-		
-		print("fps: " + str(int(clock.get_fps())))
+		#print("fps: " + str(int(clock.get_fps())))
 		pygame.display.update()
 		
 	pygame.quit()
 	sys.exit()
-	
+
+
 if __name__ == "__main__": main()

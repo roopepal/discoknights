@@ -1,13 +1,12 @@
 from square import Square
-from common import reset_screen
 from constants import *
 from coordinates import Coordinates
+from common import *
 from map_object import MapObject
 from object_type import ObjectType
-import os
 from new_character import Character
-from turn import TurnController
-import pygame
+from turn_controller import TurnController
+import pygame, os
 
 
 class Map(object):
@@ -52,6 +51,10 @@ class Map(object):
 			o.set_view()
 			
 	
+	def start_game(self):
+		self.in_range = self.turn_controller.current_character.get_movement_range()
+		self.view.update_range = MOVEMENT
+	
 	
 	def get_square_at(self, coordinates):
 		if self.contains_coordinates(coordinates):
@@ -81,12 +84,16 @@ class Map(object):
 			# add to the map
 			self.characters.append(character)
 			self.get_square_at(coordinates).character = character
+			
 			# add to the turn controller
 			self.turn_controller.add_character(character)
+			
 			# update the character's attributes
 			character.added_to_map(self,coordinates,facing)
+			
 			# initialize CharacterView
 			character.set_view()
+			
 		else:
 			print("Square wasn't empty. Cannot add character.")
 	
@@ -96,6 +103,7 @@ class Map(object):
 			# add to the map
 			self.objects.append(map_object)
 			self.get_square_at(coordinates).object = map_object
+			
 			# update the character's attributes
 			map_object.added_to_map(self, coordinates)
 		else:
@@ -134,7 +142,11 @@ class MapView(object):
 		# set screen
 		self.screen = reset_screen()
 		
+		# set map
 		self.map = map_object
+		
+		# initialize range
+		self.update_range = False
 		
 		# calculate the pixel width and height of the map to be rendered
 		self.width = (self.map.width + self.map.height) * TILE_W / 2 
@@ -180,47 +192,37 @@ class MapView(object):
 				screen_x, screen_y = map_to_screen(x,y)
 				
 				# blit the square
-				self.squares_image.blit( square.squaretype.image, (screen_x + self.draw_offset_x, screen_y) )
+				self.squares_image.blit( square.type.image, (screen_x + self.draw_offset_x, screen_y) )
 				
 	
-	def render_movement_range(self):
+	def render_range(self, indicator):
+		# clear range image
+		self.range_image.fill(0)
+		
 		for coordinates in self.map.in_range:
 			# convert map coordinates to screen coordinates 
 			screen_x, screen_y = map_to_screen(coordinates.x, coordinates.y)
 			
 			# blit movement range indicator
-			self.range_image.blit( self.move_range_ind, (screen_x + self.draw_offset_x, screen_y) )
+			self.range_image.blit( indicator, (screen_x + self.draw_offset_x, screen_y) )
 			
-			
-	def render_attack_range(self):
-		for coordinates in self.map.in_range:
-			# convert map coordinates to screen coordinates 
-			screen_x, screen_y = map_to_screen(coordinates.x, coordinates.y)
-			
-			# blit movement range indicator
-			self.range_image.blit( self.attack_range_ind, (screen_x + self.draw_offset_x, screen_y) )
-			
-			
-	def render_heal_range(self):
-		for coordinates in self.map.in_range:
-			# convert map coordinates to screen coordinates 
-			screen_x, screen_y = map_to_screen(coordinates.x, coordinates.y)
-			
-			# blit movement range indicator
-			self.range_image.blit( self.heal_range_ind, (screen_x + self.draw_offset_x, screen_y) )
-			
+			# release range update
+			self.update_range = False
+	
 	
 	def move(self, delta_x, delta_y):
 		self.rect.move_ip(delta_x, delta_y)
 	
 	
+	def update(self):
+		if self.update_range == MOVEMENT:
+			self.render_range(self.move_range_ind)
+		elif self.update_range == ATTACK:
+			self.render_range(self.attack_range_ind)
+		elif self.update_range == HEAL:
+			self.render_range(self.heal_range_ind)
+	
+	
 	def draw(self):
 		self.screen.blit(self.squares_image, self.rect)
 		self.screen.blit(self.range_image, self.rect)
-	
-	
-	def update(self):
-		# TODO: update range indicators
-		# TODO: update position
-		pass
-	

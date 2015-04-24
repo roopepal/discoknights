@@ -18,15 +18,19 @@ class Character(object):
 		self.max_health = max_health
 		self.health = max_health
 		self.range = move_range
-		
 		self.actions = []
 		self.stunned = 0
 		self.ai = is_ai
-		self.has_moved = False
-		self.dead = False
 		
+		# sprite paths
 		self.stand_sprite_paths = stand_sprites
 		self.walk_sprite_paths = walk_sprites
+		
+		# initialize states
+		self.dead = False
+		self.has_moved = False
+		self.walking = False
+		self.walk_to = None
 	
 	
 	def added_to_map(self, current_map, coordinates, facing):
@@ -90,12 +94,17 @@ class Character(object):
 	
 	
 	def end_turn(self):
-		# Gives the turn to the next character.
+		# Reset move status
 		self.has_moved = False
-		return self.map.turn_controller.next()
+		
+		# Give turn to next character
+		self.map.turn_controller.next()
+		
+		# Update range to next character
+		self.map.in_range = self.map.turn_controller.current_character.get_movement_range()
+		self.map.view.update_range = MOVEMENT
 	
-	
-	def get_movement_range(self, move_range):
+	def get_movement_range(self, move_range=None):
 		'''
 		Returns a list of the coordinates that are within the movement
 		range from the character. For movement, a square has to be
@@ -139,7 +148,7 @@ class Character(object):
 				# if there is a square at n
 				if square:
 					# if the square is walkable and empty
-					if square.visited == False and square.type.is_walkable() and square.is_empty():
+					if square.visited == False and square.type.walkable and square.is_empty():
 						# set range count from start to be one more than for the current square
 						square.range_count = self.map.get_square_at(current).range_count + 1
 						# if square is still within range, put in queue
@@ -151,6 +160,7 @@ class Character(object):
 								in_range.append(square.coordinates)
 									
 		# return the list of coordinates
+		
 		return in_range
 
 			
@@ -164,9 +174,13 @@ class Character(object):
 
 		Uses Lee algorithm.
 		'''
-		
+		in_range = self.map.in_range
 		start = self.coordinates
 		end = coordinates
+		
+		# if the target is not in range, there is no path there
+		if not end in in_range:
+			return False
 		
 		path = []
 		# last step is known, it is the target coordinates
@@ -176,7 +190,9 @@ class Character(object):
 		current_range_count = self.map.get_square_at(end).range_count 
 		
 		while True:
+			
 			neighbors = end.get_neighbors()
+			
 			for n in neighbors:
 				# if n is the start point, the full path has been found
 				if n == start:
@@ -186,7 +202,7 @@ class Character(object):
 
 				square = self.map.get_square_at(n)
 				# if square has a smaller range count from the starting point, and is walkable and empty
-				if square.range_count < current_range_count and square.type.is_walkable() and square.is_empty():
+				if square.range_count < current_range_count and square.type.walkable and square.is_empty():
 					# add to the shortest path
 					path.append(n)
 					# go on to finding the next step
@@ -199,13 +215,13 @@ class Character(object):
 		'''
 		Moves one step to the direction the character is facing.
 		'''
-		target_coordinates = self.get_coordinates().get_neighbor(self.get_facing())
+		target_coordinates = self.coordinates.get_neighbor(self.facing)
 		target_square = self.map.get_square_at(target_coordinates)
 		
-		if target_square.get_type().is_walkable() and target_square.is_empty():
-			self.map.get_square_at(self.coordinates).set_character(None)
+		if target_square.type.walkable and target_square.is_empty():
+			self.map.get_square_at(self.coordinates).character = None
 			self.coordinates = target_coordinates
-			self.map.get_square_at(target_coordinates).set_character(self)
+			self.map.get_square_at(target_coordinates).character = self
 			return True
 		else:
 			return False
@@ -213,7 +229,6 @@ class Character(object):
 	def move_to_direction(self, direction):
 		'''
 		Moves one step to the given direction.
-		A helper method for move_to_coordinates().
 		'''
 		self.turn_to_direction(direction)
 		return self.move_forward()	  
@@ -223,7 +238,7 @@ class Character(object):
 		Moves the character to the given target coordinates, if the coordinates are within the move range of the character.
 		'''
 		if not self.has_turn():
-			print("It's not {:}'s turn.".format(self.get_name()))			# Debugging print
+			print("It's not {:}'s turn.".format(self.name))			# Debugging print
 			return False
 		elif self.stunned:
 			print("{:} is stunned".format(self.name))
@@ -235,10 +250,10 @@ class Character(object):
 			shortest_path = self.get_shortest_path(target)
 			for step in shortest_path:
 								
-				target_x = step.get_x()
-				target_y = step.get_y()
-				self_x = self.get_coordinates().get_x()
-				self_y = self.get_coordinates().get_y()
+				target_x = step.x
+				target_y = step.y
+				self_x = self.coordinates.x
+				self_y = self.coordinates.y
 				
 				if ( target_x - self_x == 0 ) and ( target_y - self_y == -1 ):
 					ret = self.move_to_direction(UP)
@@ -267,12 +282,10 @@ class CharacterView(object):
 	
 	def __init__(self, character):
 		self.character = character
-		# create lists for sprite images
+		
+		# create dicts for images
 		self.stand_images = {}
 		self.walk_images = {}
-		# create lists for walking sprites
-		for direction in get_directions():
-			self.walk_images[direction[1]] = []
 		
 		# position character in the center of the isometric tile
 		self.draw_offset_x = 13
@@ -285,7 +298,11 @@ class CharacterView(object):
 			self.stand_images[sprite_path] = image
 		
 		# check if walking sprites exist
-		if self.character.walk_sprite_paths:
+		if self.character.walk_sprite_paths:			
+			# create lists for walking sprites
+			for direction in get_directions():
+				self.walk_images[direction[1]] = []
+			
 			# there are multiple sprites for each walking direction
 			for direction in self.character.walk_sprite_paths:
 				for sprite_path in self.character.walk_sprite_paths[direction]:
@@ -295,9 +312,14 @@ class CharacterView(object):
 		# set current image
 		self.image = self.stand_images[ self.character.facing[1] ]
 		self.rect = image.get_rect()
+		
 		# set position the first time
 		self.set_screen_pos()
 		
+		# initialize animation frame index
+		self.anim_frame = 0
+		# initialize animation frame count for half speed updating
+		self.frame_count = 0
 	
 	def set_screen_pos(self):
 		# get position on map
@@ -312,7 +334,81 @@ class CharacterView(object):
 		# set position on screen
 		self.rect.x = screen_x + self.draw_offset_x
 		self.rect.y = screen_y + self.draw_offset_y
+	
+	
+	def get_next_walk_frame(self):
+		# get number of sprites
+		anim_len = len(self.walk_images[self.character.facing[1]])
+
+		# increment frame count
+		self.frame_count += 1
 		
+		# check if half speed, full speed may be too fast
+		if HALF_SPEED_WALK:
+			if self.frame_count % 2 == 0:
+				self.anim_frame += 1
+		else:
+			self.anim_frame += 1
+		
+		# reset if over number of frames
+		if self.anim_frame > anim_len - 1:
+			self.anim_frame = 0
+		
+		# return the next image
+		return self.walk_images[self.character.facing[1]][self.anim_frame]
+		
+	
+	def update(self):
+		if self.character.walking:
+			# get current step
+			step = self.character.walk_path[0]
+			
+			# set facing direction
+			if self.character.coordinates.is_top_neighbor(step):
+				self.character.facing = UP
+			elif self.character.coordinates.is_right_neighbor(step):
+				self.character.facing = RIGHT
+			elif self.character.coordinates.is_bottom_neighbor(step):
+				self.character.facing = DOWN
+			elif self.character.coordinates.is_left_neighbor(step):
+				self.character.facing = LEFT
+			
+			# set image
+			if self.walk_images:
+				self.image = self.get_next_walk_frame()
+			else:
+				self.image = self.stand_images[self.character.facing[1]]
+			
+			# move image to facing direction
+			self.rect.move_ip(self.character.facing[2][0], self.character.facing[2][1])
+			
+			# get target screen coordinates
+			target_x, target_y = map_to_screen(step.x, step.y)
+			target_x += self.character.map.view.rect.topleft[0] + self.character.map.view.draw_offset_x + self.character.view.draw_offset_x
+			target_y += self.character.map.view.rect.topleft[1] + self.character.view.draw_offset_y
+			
+			# if reached step target, go to next step
+			if self.rect.topleft == (target_x, target_y):
+				
+				# move in background logic
+				self.character.move_forward()
+				
+				# remove walked step
+				self.character.walk_path.remove(step)
+				
+				if len(self.character.walk_path) == 0:
+					# stop walking
+					self.character.walking = False
+					
+					# set standing sprite
+					self.image = self.stand_images[self.character.facing[1]]
+					
+# TEMPORARY			# end turn and update range
+					self.character.end_turn()
+					
+					
+			
+			
 	def draw(self):
 		self.character.map.view.screen.blit(self.image, self.rect)
 

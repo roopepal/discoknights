@@ -8,6 +8,7 @@ class TurnController(object):
         
         self.current_has_moved = False
         
+		
     def add_character(self, character):
         self.characters.append(character)
         
@@ -15,21 +16,21 @@ class TurnController(object):
         if len(self.characters) == 1:
             self.reset()
         
+		
     def reset(self):
         if not len(self.characters) == 0:
             self.current_character = self.characters[0]
         else:
             print("No characters in turn controller.")          # Debugging print
-            
-    def get_current_character(self):
-        return self.current_character
     
+	
     def was_moved(self):
         self.current_has_moved = True
     
     def has_moved(self):
         return self.current_has_moved
     
+	
     def next(self):
         current_index = self.characters.index(self.current_character)
         if current_index < ( len(self.characters) - 1 ):

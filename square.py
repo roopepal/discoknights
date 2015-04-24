@@ -8,25 +8,10 @@ class Square(object):
     range_count = 0
     
     def __init__(self, coordinates, squaretype):
-        self.location = coordinates
-        self.squaretype = squaretype
+        self.coordinates = coordinates
+        self.type = squaretype
         self.character = None
         self.object = None
-    
-    def get_location(self):
-        return self.location
-    
-    def get_type(self):
-        return self.squaretype
-    
-    def print_type(self):
-        print(self.squaretype)
-    
-    def get_character(self):
-        return self.character
-    
-    def set_character(self, character):
-        self.character = character
 
     def has_character(self):
         if self.character == None:
