@@ -1,5 +1,6 @@
 import pygame, os
 from common import *
+from constants import GRAPHICS_DIR
 
 class MapObject(object):
 	'''

@@ -1,6 +1,5 @@
 import pygame
-import options
-from constants import *
+from constants import TILE_W, TILE_H, WINDOW_SIZE, BLACK, VOLUME
 from coordinates import Coordinates
 
 
@@ -30,9 +29,29 @@ def reset_screen():
 		pygame.init()
 		
 	# set screen
-	screen = pygame.display.set_mode( options.window_size )
+	screen = pygame.display.set_mode( WINDOW_SIZE, pygame.FULLSCREEN )
 	
 	# fill with black
 	screen.fill(BLACK)
 	
 	return screen
+
+
+def play_music(file_path, new_volume = None):
+	# check for mixer
+	if not pygame.mixer.get_init():
+		pygame.mixer.init()
+		pygame.mixer.music.set_volume(VOLUME)
+		
+	# get current volume if new volume not given
+	if not new_volume:
+		volume = pygame.mixer.music.get_volume()
+	
+	# check for file
+	if file_path:
+		# load music
+		music = pygame.mixer.music.load(file_path)
+		# set volume
+		pygame.mixer.music.set_volume(volume)
+		# set channel, and loop music
+		channel = pygame.mixer.music.play(-1)

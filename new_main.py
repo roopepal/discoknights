@@ -1,39 +1,29 @@
 from common import reset_screen
-from config_reader import build
 from constants import FPS
-from event_handler import GameEventHandler
-from new_map import Map, MapView
-from state import GameState, MainMenuState
+from state import StateManager
 import pygame, sys
 
 
 def main():
 	
+	# Initialize Pygame
 	pygame.init()
 	clock = pygame.time.Clock()
 	
 	# Initialize screen and set display mode
 	reset_screen()
 	
-	# Build the map from config files
-	m = build()
-	
-	# Initialize game states
-	game = GameState(m)
-	main_menu = MainMenuState()
-	
-	# set current state
-	state = main_menu
+	# Initialize state manager
+	state_mgr = StateManager()
 	
 	while 1:
 		
 		clock.tick(FPS)
 		
-		state.handle_events()
-		state.update()
-		state.render()
+		state_mgr.current_state.handle_events()
+		state_mgr.current_state.update()
+		state_mgr.current_state.draw()
 		
-		#print("fps: " + str(int(clock.get_fps())))
 		pygame.display.update()
 		
 	pygame.quit()

@@ -1,7 +1,9 @@
 from direction import *
 from action import Action
 from common import *
+from constants import *
 from queue import Queue
+import pygame, os
 
 
 class Character(object):
@@ -60,8 +62,10 @@ class Character(object):
 
 		
 	def heal(self, amount):
-		# Increases the character's health points by the given amount.
-		self.health += amount	
+		# Increases the character's health points by the given amount, up to max health.
+		self.health += amount
+		if self.health > self.max_health:
+			self.health = self.max_health
 	
 	
 	def add_action(self, action_type, strength, action_range, description):
@@ -103,6 +107,11 @@ class Character(object):
 		# Update range to next character
 		self.map.in_range = self.map.turn_controller.current_character.get_movement_range()
 		self.map.view.update_range = MOVEMENT
+		
+		# Update character info and actions
+		self.map.view.update_char_info = True
+		self.map.view.update_action_buttons()
+				
 	
 	def get_movement_range(self, move_range=None):
 		'''
@@ -164,27 +173,28 @@ class Character(object):
 		return in_range
 
 			
-	def get_shortest_path(self, coordinates):
+	def get_shortest_path(self, coordinates, for_ai = False):
 		'''
 		Gets the shortest path from the character to the given
 		coordinates. Returns a list of coordinates.
 		
-		Assumes that the method get_movement_range() has been run right
+		Assumes that the method get_movement_range() has been run
 		before this, so that the range_counts in squares are correct.
 
-		Uses Lee algorithm.
+		Based on the Lee algorithm.
 		'''
 		in_range = self.map.in_range
 		start = self.coordinates
 		end = coordinates
+		path = []
+		
+		# last step is known, it is the target coordinates
+		path.append(end)
 		
 		# if the target is not in range, there is no path there
 		if not end in in_range:
+			print("Not in range.")
 			return False
-		
-		path = []
-		# last step is known, it is the target coordinates
-		path.append(end)
 		
 		# trace back from the end
 		current_range_count = self.map.get_square_at(end).range_count 
@@ -202,14 +212,22 @@ class Character(object):
 
 				square = self.map.get_square_at(n)
 				# if square has a smaller range count from the starting point, and is walkable and empty
-				if square.range_count < current_range_count and square.type.walkable and square.is_empty():
-					# add to the shortest path
-					path.append(n)
-					# go on to finding the next step
-					end = n
-					current_range_count = self.map.get_square_at(end).range_count
-					break
-	
+				if square.range_count < current_range_count and square.type.walkable:
+					if for_ai:
+						# add to the shortest path
+						path.append(n)
+						# go on to finding the next step
+						end = n
+						current_range_count = self.map.get_square_at(end).range_count
+						break
+					elif square.is_empty():
+						# add to the shortest path
+						path.append(n)
+						# go on to finding the next step
+						end = n
+						current_range_count = self.map.get_square_at(end).range_count
+						break
+						
 	
 	def move_forward(self):
 		'''
@@ -226,12 +244,14 @@ class Character(object):
 		else:
 			return False
 		
+		
 	def move_to_direction(self, direction):
 		'''
 		Moves one step to the given direction.
 		'''
 		self.turn_to_direction(direction)
 		return self.move_forward()	  
+		
 		
 	def move_to_coordinates(self, target):
 		'''
@@ -321,6 +341,7 @@ class CharacterView(object):
 		# initialize animation frame count for half speed updating
 		self.frame_count = 0
 	
+	
 	def set_screen_pos(self):
 		# get position on map
 		map_pos = self.character.coordinates
@@ -360,6 +381,9 @@ class CharacterView(object):
 	
 	def update(self):
 		if self.character.walking:
+			# set turn status to moved
+			self.character.has_moved = True
+			
 			# get current step
 			step = self.character.walk_path[0]
 			
@@ -403,11 +427,10 @@ class CharacterView(object):
 					# set standing sprite
 					self.image = self.stand_images[self.character.facing[1]]
 					
-# TEMPORARY			# end turn and update range
-					self.character.end_turn()
-					
-					
-			
+					# get AI action
+					if self.character.ai:
+						self.character.map.turn_controller.ai_use_action()
+						
 			
 	def draw(self):
 		self.character.map.view.screen.blit(self.image, self.rect)

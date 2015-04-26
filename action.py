@@ -1,3 +1,5 @@
+from queue import Queue
+
 class Action(object):
 	
 	# Action types
@@ -24,7 +26,7 @@ class Action(object):
 		action_range = self.range
 		
 		in_range = []
-		squares_in_map = self.charactermap.squares
+		squares_in_map = self.character.map.squares
 		start = self.character.coordinates
 		queue = Queue()
 
