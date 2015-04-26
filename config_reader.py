@@ -7,28 +7,28 @@ from new_character import Character
 from coordinates import Coordinates
 import direction
 
+# can be used to get json representation of the config after reading
 #import json
+	
 
-def build():
-	# initialize a reader and read config from files
-	r = ConfigReader()
-	f = open(MAP_CONFIG, 'r')
-	map_config = r.read_config(f)
-	f.close()
-	f = open(CHARACTER_CONFIG, 'r')
-	character_config = r.read_config(f)
-	f.close()
-	
-	# build map and characters
-	m = r.build_from_config(map_config, character_config)
-	
-	# return built map
-	return m
-	
 
 class ConfigReader(object):
+	'''A config file reader that builds maps and characters based on configuration files.'''
+	
+	def __init__(self):
+		
+		# read config from files
+		file = open(MAP_CONFIG, 'r')
+		self.map_config = self.read_config(file)
+		file.close()
+		
+		file = open(CHARACTER_CONFIG, 'r')
+		self.character_config = self.read_config(file)
+		file.close()
+	
 	
 	def read_config(self, input):
+		'''Read config files and build a nested dictionary.'''
 		
 		self.config = []
 		self.current_line = ''
@@ -126,17 +126,19 @@ class ConfigReader(object):
 		return self.config
 
 	
-	def build_from_config(self, map_config, character_config):
+	def build_map_base(self, state, map_config, map_index):
+		'''Build a map without characters.'''
+		
 		# Initialize Map object
-		m = Map()
+		mp = Map(state)
 		
 		# Build map
 		for item in map_config:
-			
+						
 			# Square types
 			if item["id"].lower() == "squaretype":
 				print("Building squaretype '{:}'...".format(item["name"]))
-				m.add_squaretype(
+				mp.add_squaretype(
 					SquareType(
 						item["name"],
 						item["short"],
@@ -148,7 +150,7 @@ class ConfigReader(object):
 			# Object types
 			elif item["id"].lower() == "object":
 				print("Building object type '{:}'...".format(item["name"]))
-				m.add_object_type(
+				mp.add_object_type(
 					ObjectType(
 						item["name"],
 						item["short"],
@@ -159,14 +161,21 @@ class ConfigReader(object):
 					)
 			
 			# Map squares and objects in squares
-			elif item["id"].lower() == "map":
+			elif item["id"].lower() == "map" and int(item["index"]) == map_index:
 				print("Building map...")
-				m.build_map(
+				mp.build_squares(
 					int( item["height"] ), 
 					int( item["width"] ), 
 					item["squares"]
 					)
+		
+		# return built map base	
+		return mp
 
+
+	def build_characters_on_map(self, character_config, mp):
+		'''Builds characters on a map and returns the map back.'''
+		
 		# Characters and actions
 		for item in character_config:
 			if item["id"].lower() == "character":
@@ -194,13 +203,13 @@ class ConfigReader(object):
 				coordinates = Coordinates(int(item["x"]), int(item["y"]))
 
 				# if there is a square and it is empty, add character there
-				if m.contains_coordinates(coordinates) and m.get_square_at(coordinates).type.walkable:
-					m.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
+				if mp.contains_coordinates(coordinates) and mp.get_square_at(coordinates).type.walkable:
+					mp.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
 
 				# otherwise print reason for failure
-				elif not m.get_square_at(coordinates).type.walkable:
-					print("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, m.get_square_at(coordinates).type.name))
-				elif not m.contains_coordinates(coordinates):
+				elif not mp.get_square_at(coordinates).type.walkable:
+					print("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, mp.get_square_at(coordinates).type.name))
+				elif not mp.contains_coordinates(coordinates):
 					print("Cannot add character to {:}, out of bounds.".format(coordinates))
 
 				# Create actions for characters
@@ -221,5 +230,17 @@ class ConfigReader(object):
 									item2["name"]
 									)
 		
-		print("Build from config successful.\n")
-		return m
+		return mp
+		
+		
+	def get_map(self, state, map_index):
+		'''Builds a full map with characters and objects.'''
+
+		# build map base
+		mp = self.build_map_base(state, self.map_config, map_index) 
+
+		# build characters on the map base
+		mp = self.build_characters_on_map(self.character_config, mp)
+
+		# return built map
+		return mp

@@ -1,7 +1,7 @@
-from common import reset_screen
-from constants import FPS
+from constants import FPS, VOLUME
 from state import StateManager
 import pygame, sys
+
 
 
 def main():
@@ -9,12 +9,12 @@ def main():
 	# Initialize Pygame
 	pygame.init()
 	clock = pygame.time.Clock()
-	
-	# Initialize screen and set display mode
-	reset_screen()
+	pygame.mixer.music.set_volume(VOLUME)
 	
 	# Initialize state manager
 	state_mgr = StateManager()
+	# Initialize screen and set display mode
+	state_mgr.reset_screen()
 	
 	while 1:
 		

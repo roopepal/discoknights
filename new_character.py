@@ -1,7 +1,7 @@
 from direction import *
 from action import Action
-from common import *
 from constants import *
+from coordinates import map_to_screen, screen_to_map
 from queue import Queue
 import pygame, os
 

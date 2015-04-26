@@ -1,6 +1,6 @@
 from action import Action
-from common import *
 from constants import *
+from coordinates import Coordinates, map_to_screen, screen_to_map
 import pygame, sys
 
 class EventHandler(object):
@@ -25,11 +25,11 @@ class EventHandler(object):
 		elif event.type == pygame.KEYDOWN:
 			# change state with number keys, DEBUG
 			if event.key == pygame.K_1:
-				self.state.state_manager.go_to(self.state.state_manager.game)
+				self.state.state_mgr.go_to(self.state.state_mgr.game)
 			elif event.key == pygame.K_2:
-				self.state.state_manager.go_to(self.state.state_manager.main_menu)
+				self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
 			elif event.key == pygame.K_3:
-				self.state.state_manager.go_to(self.state.state_manager.options_menu)
+				self.state.state_mgr.go_to(self.state.state_mgr.options_menu)
 			
 			# handle key presses
 			else:
@@ -50,7 +50,7 @@ class IntroEventHandler(EventHandler):
 	
 	
 	def skip(self):
-		self.state.state_manager.go_to(self.state.state_manager.main_menu)
+		self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
 	
 	def handle_click(self, mouse_pos):
 		self.skip()
@@ -113,9 +113,9 @@ class GameEventHandler(EventHandler):
 	def handle_key(self, key):
 		if key == pygame.K_ESCAPE:
 			# go to menu with ESC
-			self.state.state_manager.go_to(self.state.state_manager.main_menu)
+			self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
 			# set Resume Game option not greyed out
-			self.state.state_manager.main_menu.menu.options[0].greyed = False
+			self.state.state_mgr.main_menu.menu.options[0].greyed = False
 	
 	
 	def handle_click(self, mouse_pos):

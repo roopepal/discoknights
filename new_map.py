@@ -1,7 +1,6 @@
 from square import Square
 from constants import *
-from coordinates import Coordinates
-from common import *
+from coordinates import Coordinates, map_to_screen, screen_to_map
 from map_object import MapObject
 from object_type import ObjectType
 from new_character import Character
@@ -10,12 +9,15 @@ from ui import Button
 import pygame, os
 
 
+
 class Map(object):
 	'''
 	Defines the map object that contains the game world.
 	'''
 	
-	def __init__(self):
+	def __init__(self, state):
+		# set program state
+		self.state = state
 		
 		self.characters = []
 		self.objects = []
@@ -27,10 +29,10 @@ class Map(object):
 		self.in_range = None
 		
 		
-	def build_map(self, height, width, squares_input):
+	def build_squares(self, height, width, squares_input):
 		self.height = height
 		self.width = width
-		
+				
 		# prepare empty slots for squares
 		self.squares = height * [None]
 		for y in range(height): 
@@ -153,11 +155,11 @@ class MapView(object):
 	'''
 	
 	def __init__(self, map_object):
-		# set screen
-		self.screen = reset_screen()
-		
 		# set map
 		self.map = map_object
+		
+		# set screen
+		self.screen = self.map.state.screen
 		
 		# calculate the pixel width and height of the map to be drawed
 		self.width = (self.map.width + self.map.height) * TILE_W / 2 

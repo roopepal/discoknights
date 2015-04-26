@@ -6,6 +6,7 @@ if not pygame.display.get_init():
 
 # General
 WINDOW_SIZE = (960, 576)
+FULLSCREEN = False
 FPS = 60
 HALF_SPEED_WALK = True
 

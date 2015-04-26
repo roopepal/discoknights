@@ -1,11 +1,13 @@
-from common import reset_screen
-from constants import WINDOW_SIZE, MENU_OPTION_COLOR, MENU_OPTION_HOVER_COLOR, MENU_OPTION_GREYED_COLOR, XL_FONT
+from constants import *
 
 class Menu(object):
 	
-	def __init__(self):
-		# get screen
-		self.screen = reset_screen()
+	def __init__(self, state):
+		# set state
+		self.state = state
+		
+		# set screen
+		self.screen = self.state.screen
 		
 		# menu options
 		self.options = []
@@ -72,3 +74,8 @@ class MenuOption(object):
 	
 	def draw(self):
 		self.menu.screen.blit(self.image, self.rect)
+		
+		
+
+class MenuOptionPicture(MenuOption):
+	pass
