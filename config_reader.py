@@ -1,9 +1,9 @@
 from action import Action
 from constants import *
-from new_map import Map
+from map import Map
 from object_type import ObjectType
 from squaretype import SquareType
-from new_character import Character
+from character import Character
 from coordinates import Coordinates
 import direction
 

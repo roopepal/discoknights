@@ -1,6 +1,6 @@
 import pygame, os
-from common import *
 from constants import GRAPHICS_DIR
+from coordinates import map_to_screen
 
 class MapObject(object):
 	'''

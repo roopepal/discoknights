@@ -47,7 +47,7 @@ class StateManager(object):
 		screen = pygame.display.set_mode( WINDOW_SIZE, flag )
 		# fill with black
 		screen.fill(BLACK)
-		print("reset screen")
+		
 		return screen
 		
 		

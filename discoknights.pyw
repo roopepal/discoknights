@@ -4,6 +4,6 @@
 # Author: Roope Palomäki
 # Email: roope.palomaki@me.com
 
-import new_main
+import main
 
-new_main.main()
+main.main()

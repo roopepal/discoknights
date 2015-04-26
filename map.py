@@ -3,7 +3,7 @@ from constants import *
 from coordinates import Coordinates, map_to_screen, screen_to_map
 from map_object import MapObject
 from object_type import ObjectType
-from new_character import Character
+from character import Character
 from turn_controller import TurnController
 from ui import Button
 import pygame, os
