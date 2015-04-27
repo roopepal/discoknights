@@ -231,7 +231,19 @@ class ConfigReader(object):
 									)
 		
 		return mp
+	
+	
+	def count_available_maps(self):
+		'''Returns a count of available maps.'''
 		
+		count = 0
+		
+		for item in self.map_config:
+			if item["id"].lower() == "map":
+				count += 1
+		
+		return count
+	
 		
 	def get_map(self, state, map_index):
 		'''Builds a full map with characters and objects.'''

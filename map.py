@@ -25,7 +25,7 @@ class Map(object):
 		self.object_types = {}
 		self.turn_controller = TurnController(self)
 		
-		# current range for character movement and actions
+		# list of coordinates in range for character movement and actions
 		self.in_range = None
 		
 		

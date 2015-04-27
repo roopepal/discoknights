@@ -79,9 +79,16 @@ class MenuEventHandler(EventHandler):
 		
 	def handle_click(self, mouse_pos):
 		for option in self.menu.options:
+			# if option was clicked
 			if option.rect.collidepoint(pygame.mouse.get_pos()):
+				# if option is available and there is a function for it
 				if option.function and not option.greyed:
-					option.function()
+					# if there is a function parameter
+					if not option.func_parameter == None :
+						option.function(option.func_parameter)
+					# else if no parameter
+					else:
+						option.function()
 				
 	
 	def handle_event(self, event):

@@ -15,7 +15,7 @@ class Menu(object):
 
 class MenuOption(object):
 	
-	def __init__(self, menu, text, function=None, greyed=False):
+	def __init__(self, menu, text, function=None, greyed=False, func_parameter=None):
 		# set parent menu
 		self.menu = menu
 		
@@ -25,6 +25,9 @@ class MenuOption(object):
 		
 		# set function
 		self.function = function
+		# set parameter
+		self.func_parameter = func_parameter
+		print("Got parameter: " + str(func_parameter))
 		
 		# prepare images
 		self.set_images()

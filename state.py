@@ -11,17 +11,25 @@ class StateManager(object):
 	'''Manages the game state'''
 	def __init__(self):
 		
+		# init config reader (reads config files)
+		self.config_reader = config_reader.ConfigReader()
+		
+		# count maps available
+		self.map_count = self.config_reader.count_available_maps()
+		
 		# get default fullscreen setting
 		self.fullscreen = FULLSCREEN
 		
-		# init all states
+		# init menu states
 		self.intro_screen = IntroScreenState(self)
-		self.game = GameState(self, 1)
 		self.main_menu = MainMenuState(self)
 		self.choose_map_menu = ChooseMapMenuState(self)
 		self.options_menu = OptionsMenuState(self)
 		self.sound_menu = SoundMenuState(self)
 		self.display_menu = DisplayMenuState(self)
+		
+		# init game state
+		self.game = None
 		
 		# start game in menu
 		self.current_state = self.intro_screen
@@ -33,7 +41,8 @@ class StateManager(object):
 		# change state
 		self.current_state = state
 		# change music when entering game
-		if self.current_state == self.game:
+		if self.current_state == self.game and not self.game.running:
+			self.game.running = True
 			self.play_music(GAME_MUSIC_PATH)
 			
 	
@@ -55,6 +64,7 @@ class StateManager(object):
 		# check for mixer
 		if not pygame.mixer.get_init():
 			pygame.mixer.init()
+		
 		# get current volume if new volume not given
 		if not new_volume:
 			volume = pygame.mixer.music.get_volume()
@@ -136,11 +146,8 @@ class GameState(State):
 		# init screen
 		self.screen = self.state_mgr.reset_screen()
 		
-		# init config reader
-		self.config_reader = config_reader.ConfigReader()
-		
 		# build map with config reader
-		self.map = self.config_reader.get_map(self, map_index)
+		self.map = self.state_mgr.config_reader.get_map(self, map_index)
 		
 		# init event handler
 		self.event_handler = GameEventHandler(self, self.map)
@@ -149,7 +156,7 @@ class GameState(State):
 		self.map.start_game()
 		
 		# running state
-		self.running = True
+		self.running = False
 
 		
 		
@@ -302,11 +309,11 @@ class SoundMenuState(MenuState):
 
 	def toggle_music(self):
 		if self.music_on:
-			pygame.mixer.musiset_volume(0)
+			pygame.mixer.music.set_volume(0)
 			self.music_on = False
 			self.menu.options[0].text = "Music: OFF"
 		else:
-			pygame.mixer.musiset_volume(VOLUME)
+			pygame.mixer.music.set_volume(VOLUME)
 			self.music_on = True
 			self.menu.options[0].text = "Music: ON"
 
@@ -316,7 +323,6 @@ class SoundMenuState(MenuState):
 			self.effects_on = False
 			self.menu.options[1].text = "Effects: OFF"
 		else:
-			pygame.mixer.musiunpause()
 			self.effects_on = True
 			self.menu.options[1].text = "Effects: ON"
 
@@ -366,11 +372,18 @@ class ChooseMapMenuState(MenuState):
 			MenuState.__init__(self, state_mgr)
 		
 			# add menu options
-			
+			### maps
+			for i in range(self.state_mgr.map_count):
+				# concatenate map number to menu option text
+				string = "Map " + str(i+1)
+				# add menu option
+				self.menu.options.append( MenuOption(self.menu, string, self.start_game_with_map, func_parameter=(i+1)) )
+			### back to main menu
 			self.menu.options.append( MenuOption(self.menu, "Back to Main Menu", self.go_to_main_menu) )
-		
+			
 			# set option positioning
 			self.set_rects()
 	
-		def go_to_sound_menu(self):
-			self.state_mgr.go_to(self.state_mgr.sound_menu)
+		def start_game_with_map(self, map_index):
+			self.state_mgr.game = GameState(self.state_mgr, map_index)
+			self.state_mgr.go_to(self.state_mgr.game)
