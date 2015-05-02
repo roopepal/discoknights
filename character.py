@@ -70,9 +70,9 @@ class Character(object):
 			self.health = self.max_health
 	
 	
-	def add_action(self, action_type, strength, action_range, description):
+	def add_action(self, action_type, strength, action_range, name, sound):
 		# Adds an action that the character can perform.
-		self.actions.append( Action(self, action_type, strength, action_range, description) )
+		self.actions.append( Action(self, action_type, strength, action_range, name, sound) )
 		
 		
 	def use_action(self, index, target_coordinates):
@@ -170,7 +170,7 @@ class Character(object):
 
 				# if square is reachable, has a smaller range count from 
 				# the starting point, and is walkable and empty
-				if not square.range_count == 0 and square.range_count < current_range_count \
+				if square and not square.range_count == 0 and square.range_count < current_range_count \
 				  and square.type.walkable and square.is_empty():
 					# add to the shortest path
 					path.append(n)

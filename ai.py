@@ -18,9 +18,8 @@ class Ai(object):
 			if not c.ai and not c.dead:
 				possible_targets.append(c)
 
-		# Prepare for Lee algorithm for distance calculations. Give every square a
-		# distance value. A large range ensures that all reachable squares on the 
-		# map get covered.
+		# Prepare for Lee algorithm for distance calculations. Give every square a distance
+		# value. A large range ensures that all reachable squares on the map get covered.
 		full_range = self.character.map.width * self.character.map.height - 1
 		self.map.set_in_range(full_range, self.character.coordinates)
 				
@@ -39,6 +38,8 @@ class Ai(object):
 				path = self.character.get_shortest_path(t.coordinates, ignore_range=True)
 				if path:
 					path_len = len(path)
+					
+					print(t, path_len)
 								
 					if not closest_enemy_path_len or path_len < closest_enemy_path_len:
 						closest_enemy = t

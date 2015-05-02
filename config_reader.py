@@ -9,7 +9,12 @@ import direction
 
 # can be used to get json representation of the config after reading
 #import json
+
+class ConfigFileError(Exception):
+	'''Defines an exception that the config reader throws in case of a corrupted file.'''
 	
+	def __init__(self, message):
+		super(ConfigFileError, self).__init__(message)
 
 
 class ConfigReader(object):
@@ -27,45 +32,117 @@ class ConfigReader(object):
 		file.close()
 	
 	
+	def check_parentheses(self, input):
+		'''Checks the given input for correct parentheses, brackets, and braces. Reports the line number for an error.'''
+		
+		stack = []
+		line_nr = 0
+		
+		for line in input:
+			line_nr += 1
+			
+			# for each character in the line
+			for char in line:
+				# put openings in stack
+				if char == '(' or char == '[' or char == '{':
+					stack.append(char)
+				
+				# check closings from stack
+				elif char == ')':
+					if len(stack) == 0:
+						raise ConfigFileError("Unmatched parentheses. Line {:}.".format(line_nr))
+					elif stack[-1] == '(':
+						stack.pop()
+					else:
+						raise ConfigFileError("Unmatched parentheses. Line {:}.".format(line_nr))
+				
+				elif char == ']':
+					if len(stack) == 0:
+						raise ConfigFileError("Unmatched brackets. Line {:}.".format(line_nr))
+					elif stack[-1] == '[':
+						stack.pop()
+					else:
+						raise ConfigFileError("Unmatched brackets. Line {:}".format(line_nr))
+						
+				elif char == '}':
+					if len(stack) == 0:
+						raise ConfigFileError("Unmatched braces. Line {:}.".format(line_nr))
+					elif len(stack) == 0 or stack[-1] == '{':
+						stack.pop()
+					else:
+						raise ConfigFileError("Unmatched braces. Line {:}".format(line_nr))
+			
+		# if stack is not empty, there are unclosed closures			
+		if not len(stack) == 0:
+
+			# inform what need to be closed
+			unclosed = ""
+			item_count = 0
+			
+			for item in stack:
+				item_count += 1
+				
+				# add commas if needed
+				if item_count > 1:
+					unclosed += ", "
+					
+				unclosed += str(item)
+			 
+			raise ConfigFileError("Some closures not closed. Found unclosed '{:}'".format(unclosed))
+
+
 	def read_config(self, input):
-		'''Read config files and build a nested dictionary.'''
+		'''Read config files and return the contents in a dictionary form.'''
+		
+		# Check input for matching parentheses, brackets, and braces.
+		self.check_parentheses(input)
+		
+		# Return to beginning of file
+		input.seek(0)
 		
 		self.config = []
 		self.current_line = ''
 		self.line_count = 0
 		self.block_index = -1
 		
+		# Define 'next line' helper method
 		def nl():
+			'''Proceeds to the next line on the file.'''
 			self.current_line = input.readline().strip()
 			self.line_count += 1
 
+		# Count lines
 		self.lines_in_file = 0
 		for line in input:
 			self.lines_in_file += 1
-		
+
+		# Ensure that the reader is in the beginning of the file
 		input.seek(0)
 		
+		# Read first line
 		nl()
 		
-		#header_parts = self.current_line.split()
+		# check header
+		header_parts = self.current_line.split()
 		
-		'''
 		if header_parts[0] != "DISCO":
-			# raise error
-			print()
+			raise ConfigFileError("Unknown file type. Check file header.")
+
 		if header_parts[1] != "KNIGHTS":
-			# raise error
+			raise ConfigFileError("Unknown file type. Check file header.")
+
 		if header_parts[2].strip().lower() != 'config':
-			# raise error
-		'''
-					
+			raise ConfigFileError("Unknown file type. Check file header.")
+
+
+		# go through the file line by line until no lines left
 		while self.line_count <= self.lines_in_file:
 			
 			# If line doesn't start with #, go to the next line
 			if not self.current_line.startswith('#'): 
 				nl()
 			
-			# If the line is empty or a comment, jump back to the beginning of the loop
+			# If the line is empty or a comment, jump back to the beginning of the loop to go to the next line
 			if self.current_line == '' or self.current_line.startswith("//"):
 				continue
 			
@@ -82,8 +159,10 @@ class ConfigReader(object):
 					nl()
 
 				elif ":" in self.current_line:
+					# split the line where there is a colon
 					line_parts = self.current_line.split(":")
-					# If there's a beginning bracket after the colon, put the following into a list or a dict
+					
+					# If there's a beginning curly brace after the colon, put the following parts into a list or a dict
 					if line_parts[1].strip() == "{":
 
 						# Save the key, it will be lost if a dict is created
@@ -94,35 +173,50 @@ class ConfigReader(object):
 						if ":" in self.current_line:
 							self.config[self.block_index][key] = {}
 
+							# A closing curly brace on the line closes the dictionary
 							while not "}" in self.current_line:
+								
+								# Separate keys and values 
 								line_parts = self.current_line.split(":")
 
-								# If there is multiple values, create a list of the values
+								# If there is multiple values separated with commas, create a list of the values
 								if "," in line_parts[1]:
 									self.config[self.block_index][key][line_parts[0]] = [ value.strip() for value in line_parts[1].split(",") ]
+								
+								# Otherwise just strip the value from extra spaces
 								else:
 									self.config[self.block_index][key][line_parts[0]] = line_parts[1].strip()
+								
+								# Go to the next line
 								nl()
 
 						# If there is no colon, create a list
 						else:
 							self.config[self.block_index][key] = []
-
+							
+							# A closing curly brace closes the list, keep going until there is one
 							while not "}" in self.current_line:
+								
+								# Append the values separates by spaces to the list
 								self.config[self.block_index][key].append(self.current_line.split())
+								
+								# Go to the next line
 								nl()
 
-						# Ending bracket was found, go to next line
+						# Ending bracket was found, go to the next line
 						nl()
 					
-					# If there's no beginning bracket, just take the value and do not create another structure
+					# If there's no beginning bracket, take the value and do not create another structure
 					else:
 						self.config[self.block_index][line_parts[0]] = line_parts[1].strip()
+						
+						# Go to the next line
 						nl()
 
 		#print("The following config was created:")
 		#print(json.dumps(self.config, indent=2))
 
+		# Return the config dictionary built
 		return self.config
 
 	
@@ -138,7 +232,10 @@ class ConfigReader(object):
 			# Square types
 			if item["id"].lower() == "squaretype":
 				print("Building squaretype '{:}'...".format(item["name"]))
-				mp.add_squaretype(
+				
+				# Try adding a square type based on the config file
+				try:
+					mp.add_squaretype(
 					SquareType(
 						item["name"],
 						item["short"],
@@ -146,11 +243,16 @@ class ConfigReader(object):
 						item["sprite"]
 						)
 					)
+				except:
+					raise ConfigFileError("There was a problem building the square type '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
 
 			# Object types
 			elif item["id"].lower() == "object":
 				print("Building object type '{:}'...".format(item["name"]))
-				mp.add_object_type(
+				
+				# Try adding an object type based on the config file
+				try:
+					mp.add_object_type(
 					ObjectType(
 						item["name"],
 						item["short"],
@@ -159,17 +261,24 @@ class ConfigReader(object):
 						int(item["offset_y"])
 						)
 					)
+				except:
+					raise ConfigFileError("There was a problem building the object type '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
 			
-			# Map squares and objects in squares
+			# Build map squares and objects in squares
 			elif item["id"].lower() == "map" and int(item["index"]) == map_index:
 				print("Building map...")
-				mp.build_squares(
+				
+				# Try building based on the config file
+				try:
+					mp.build_squares(
 					int( item["height"] ), 
 					int( item["width"] ), 
 					item["squares"]
 					)
-		
-		# return built map base	
+				except:
+					raise ConfigFileError("There was a problem building map number {:}. Make sure the map configuration file is properly formatted.".format(item["index"])) 
+					
+		# return built map base
 		return mp
 
 
@@ -189,47 +298,68 @@ class ConfigReader(object):
 				else:
 					walk_sprites = None
 				
-				# create a new Character object
-				new_character = Character(
-									item["name"],
-									int(item["max_health"]),
-									int(item["move_range"]),
-									item["is_ai"].lower() == "true",
-									item["stand_sprites"],
-									walk_sprites
-									)
+				# Try creating a new Character object
+				try:
+					new_character = Character(
+										item["name"],
+										int(item["max_health"]),
+										int(item["move_range"]),
+										item["is_ai"].lower() == "true",
+										item["stand_sprites"],
+										walk_sprites
+										)
+				except:
+					raise ConfigFileError("There was a problem building character '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
  
-				# read coordinates to add character at
-				coordinates = Coordinates(int(item["x"]), int(item["y"]))
+				# try to read coordinates to add character at
+				try:
+					coordinates = Coordinates(int(item["x"]), int(item["y"]))
+				except:
+					raise ConfigFileError("Invalid coordinates for character '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
 
 				# if there is a square and it is empty, add character there
 				if mp.contains_coordinates(coordinates) and mp.square_at(coordinates).type.walkable:
 					mp.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
 
-				# otherwise print reason for failure
+				# otherwise print reason for failure, without crashing the whole program
 				elif not mp.square_at(coordinates).type.walkable:
 					print("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, mp.square_at(coordinates).type.name))
 				elif not mp.contains_coordinates(coordinates):
 					print("Cannot add character to {:}, out of bounds.".format(coordinates))
 
-				# Create actions for characters
+				# Create actions for characters, loops over all items again to find all actions even if they come before the character
 				for item2 in character_config:
+					
+					# If action was found and the character name matches the current character
 					if item2["id"].lower() == "action" and item2["character"] == new_character.name:
 
 						# if more than 3 actions have been given
 						if len(new_character.actions) > 3:
-							print("Cannot have more than 3 actions.")
+							print("A character cannot have more than 3 actions.")
 
 						# if at most 3 actions have been given
 						else:
 							print("Adding action {:} to character {:}...".format(item2["name"], item2["character"]))
-							new_character.add_action(
+							
+							# read optional sound effect for action
+							if "sound" in item2.keys():
+								sound = item2["sound"]
+							else:
+								sound = None
+							
+							# try adding the action
+							try:
+								new_character.add_action(
 									getattr(Action, item2["type"].upper()),
 									int(item2["strength"]),
 									int(item2["max_range"]),
-									item2["name"]
+									item2["name"],
+									sound
 									)
+							except:
+								raise ConfigFileError("Could not add action to character '{:}'. Make sure the map configuration file is properly formatted.".format(new_character.name))
 		
+		# Return the map back with the characters
 		return mp
 	
 	

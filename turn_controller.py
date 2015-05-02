@@ -49,7 +49,6 @@ class TurnController(object):
 			
 			# if character is stunned or dead, skip it
 			if self.current_character.stunned > 0:
-				# set message variable here also								#TODO!
 				self.current_character.stunned -= 1
 				self.next()
 			elif self.current_character.dead:

@@ -2,7 +2,6 @@ DISCO KNIGHTS Config
 
 // Lines that start with two forward slashes are recognized as comments.
 
-
 // Player's characters
 
 //------------------------------------------------------------------
@@ -33,7 +32,8 @@ character: A
 type: damage
 strength: 35
 max_range: 1
-name: Hit  
+name: Hit
+sound: sword.ogg
 
 #Action
 character: A
@@ -41,6 +41,7 @@ type: damage
 strength: 30
 max_range: 1
 name: Poke
+sound: sword.ogg
 
 #Action
 character: A
@@ -48,6 +49,7 @@ type: stun
 strength: 1
 max_range: 1
 name: Stun
+sound: punch.ogg
 
 //------------------------------------------------------------------
 
@@ -78,7 +80,8 @@ character: B
 type: damage
 strength: 35
 max_range: 2
-name: Spell  
+name: Spell
+sound: spell.ogg
 
 #Action
 character: B
@@ -86,13 +89,14 @@ type: heal
 strength: 15
 max_range: 2
 name: Heal
+sound: heal.ogg
 
 //------------------------------------------------------------------
 
 #Character
 name: C
 max_health: 80
-move_range: 3
+move_range: 4
 x: 2
 y: 6
 facing: right
@@ -113,16 +117,18 @@ walk_sprites: {
 #Action
 character: C
 type: damage
-strength: 35
+strength: 30
 max_range: 1
-name: Hit  
+name: Hit
+sound: punch.ogg
 
 #Action
 character: C
 type: damage
 strength: 25
-max_range: 2
+max_range: 3
 name: Shoot
+sound: crossbow.ogg
 
 //------------------------------------------------------------------
 
@@ -157,13 +163,15 @@ type: damage
 strength: 30
 max_range: 1
 name: Hit  
+sound: sword.ogg
 
 #Action
 character: D
 type: damage
 strength: 20
-max_range: 2
-name: Throw rock
+max_range: 1
+name: Poke
+sound: sword.ogg
 
 //------------------------------------------------------------------
 
@@ -193,7 +201,8 @@ character: E
 type: damage
 strength: 30
 max_range: 1
-name: Hit  
+name: Hit
+sound: sword.ogg
 
 #Action
 character: E
@@ -201,6 +210,7 @@ type: damage
 strength: 20
 max_range: 1
 name: Poke
+sound: sword.ogg
 
 //------------------------------------------------------------------
 
@@ -230,7 +240,8 @@ character: F
 type: damage
 strength: 30
 max_range: 1
-name: Hit  
+name: Hit
+sound: sword.ogg
 
 #Action
 character: F
@@ -238,3 +249,4 @@ type: damage
 strength: 20
 max_range: 1
 name: Poke
+sound: sword.ogg

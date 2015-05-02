@@ -19,9 +19,7 @@ class MapView(object):
 		# calculate the pixel width and height of the map to be drawed
 		self.width = (self.map.width + self.map.height) * TILE_W / 2 
 		self.height = (self.map.width + self.map.height) * TILE_H / 2 + 8	# 8 is the 'thickness' of a square
-		
-		print(self.width, self.height)
-		
+				
 		# set draw offset to center the map horizontally on the surface
 		self.draw_offset_x = self.width / 2 - TILE_W / 2
 		

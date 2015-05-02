@@ -1,0 +1,46 @@
+CREDITS:
+
+
+AUTHOR:
+
+Roope Palomäki
+
+
+GRAPHICS:
+
+Roope Palomäki
+
+
+MUSIC:
+
+Intro
+Struck By The Rain, 8bit Cover by plrusek chan
+https://soundcloud.com/plrusek-chan/struck-by-the-rain-n163
+
+In-Game Music
+Yellow Copter by Play On Loop
+http://www.playonloop.com/2014-music-loops/yellow-copter/
+
+Victory Jingle
+http://www.allmusiclibrary.com/free_sound_effects.php
+
+Lost Game Jingle
+http://www.freesound.org/people/LittleRobotSoundFactory/sounds/270329/
+
+
+SOUND EFFECTS:
+
+Sword
+http://www.freesound.org/people/Erdie/sounds/27858/
+
+Heal
+http://www.freesound.org/people/qubodup/sounds/185478/
+
+Spell
+http://www.freesound.org/people/joe93barlow/sounds/105986/
+
+Crossbow
+http://www.freesound.org/people/spookymodem/sounds/249810/
+
+Punch
+http://www.freesound.org/people/RSilveira_88/sounds/216196/

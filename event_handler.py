@@ -156,7 +156,7 @@ class GameEventHandler(EventHandler):
 				# convert coordinates
 				map_x, map_y = screen_to_map(mouse_x, mouse_y)
 				coordinates = Coordinates(map_x, map_y)
-
+				
 				# if character has not moved, i.e. should move now
 				if not character.has_moved:
 					# get shortest path to clicked square

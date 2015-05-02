@@ -26,5 +26,5 @@ class Square(object):
             return False
         
     def __str__(self):
-        return "[{:}]".format(self.squaretype)
+        return "[{:}]".format(self.type)
         

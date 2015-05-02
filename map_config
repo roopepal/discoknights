@@ -37,6 +37,13 @@ sprite: rock.gif
 offset_x: 0
 offset_y: -12
 
+#Object
+name: tree
+short: t
+sprite: tree.png
+offset_x: 0
+offset_y: -76
+
 
 #Map
 index: 1
@@ -44,16 +51,16 @@ width: 12
 height: 12
 squares: {
 w w w w w w w w w w w w
-g g g g g w w g g g g g
-g g.r g g g bh bh g g g g.r g
+g g.t g g g w w g g g g.t g
+g g g g g bh bh g g g g g
 g g g g g w w g g g g g
 g g g g g w w g g g g g
 g g g g g bh bh g g g g g
 g g g g g bh bh g g g g g
 g g g g g w w g g g g g
 g g g g g w w g g g g g
-g g.r g g g bh bh g g g g.r g
-g g g g g w w g g g g g
+g g g g g bh bh g g g g g
+g g.t g g g w w g g g g.t g
 w w w w w w w w w w w w
 }
 
@@ -63,8 +70,8 @@ index: 2
 width: 12
 height: 12
 squares: {
-w w w w w w w w w w w w
-w w w w w w w w w w w w
+w w g g g g g g g g w w
+w w bv w w w w w w bv w w
 w w g g g g bh g g g w w
 w w g g.r g g w g g.r g w w
 w w g g g g w g g g w w
@@ -73,8 +80,8 @@ w w g g g g g g g g w w
 w w g g g w g g g g w w
 w w g g.r g w g g g.r g w w
 w w g g g bh g g g g w w
-w w w w w w w w w w w w
-w w w w w w w w w w w w
+w w bv w w w w w w bv w w
+w w g g g g g g g g w w
 }
 
 
@@ -83,16 +90,16 @@ index: 3
 width: 12
 height: 12
 squares: {
-w w w w w w w w w w w w
-w g g g g g w g g g g w
-w g g g g g bh g g g.r g w
-w g g g g g w g g g g w
-w g g g g g w g g g g w
-w g g g g g g g g g g w
-w g g g g g g g g g g w
-w g g g g w g g g g g w
-w g g g g w g g g g g w
-w g g.r g g bh g g g g g w
-w g g g g w g g g g g w
-w w w w w w w w w w w w
+g.t g g.t g g.t g g.t g g.t g g.t g
+g g g g g g w g g g g g
+g g g g g g bh g g g g g
+g g g g g g w g g g g g
+g g g g g g.r w g g g g g
+g g g g g g g g g g g g
+g g g g g g g g g g g g
+g g g g g w g.r g g g g g
+g g g g g w g g g g g g
+g g g g g bh g g g g g g
+g g g g g w g g g g g g
+g g.t g g.t g g.t g g.t g g.t g g.t
 }

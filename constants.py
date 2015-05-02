@@ -61,9 +61,13 @@ XXL_FONT = pygame.font.Font(FONT_PATH, 90)
 
 # Music
 VOLUME = 0.2
-MUSIC_DIR = "music"
+MUSIC_DIR = "sounds"
+
 INTRO_MUSIC_PATH = os.path.join(MUSIC_DIR, "struck_by_the_rain.ogg")
 GAME_MUSIC_PATH = os.path.join(MUSIC_DIR, "yellow_copter_short.ogg")
+
+VICTORY_MUSIC_PATH = os.path.join(MUSIC_DIR, "victory.ogg")
+LOSE_MUSIC_PATH = os.path.join(MUSIC_DIR, "lost_game2.ogg")
 
 # Colors
 BLACK = (0,0,0)
@@ -74,3 +78,6 @@ RED = (200, 10, 10)
 MENU_OPTION_COLOR = (30,30,30)
 MENU_OPTION_HOVER_COLOR = WHITE
 MENU_OPTION_GREYED_COLOR = (190,190,190)
+
+# Credits
+CREDITS_PATH = "credits.txt"

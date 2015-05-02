@@ -27,7 +27,6 @@ class MenuOption(object):
 		self.function = function
 		# set parameter
 		self.func_parameter = func_parameter
-		print("Got parameter: " + str(func_parameter))
 		
 		# prepare images
 		self.set_images()

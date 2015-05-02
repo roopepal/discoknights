@@ -22,6 +22,10 @@ class StateManager(object):
 		self.cursor = pygame.image.load(CURSOR_PATH).convert_alpha()
 		self.cursor_pos = self.cursor.get_rect()
 		
+		# prepare music and sound effect toggles
+		self.music = True
+		self.sound_effects = True
+		
 		# init config reader (reads config files)
 		self.config_reader = config_reader.ConfigReader()
 		
@@ -35,11 +39,12 @@ class StateManager(object):
 		self.options_menu = OptionsMenuState(self)
 		self.sound_menu = SoundMenuState(self)
 		self.display_menu = DisplayMenuState(self)
+		self.credits = CreditsState(self)
 		
 		# init game state
 		self.game = None
 		
-		# start game in menu
+		# start program at intro screen
 		self.current_state = self.intro_screen
 		
 	
@@ -70,7 +75,8 @@ class StateManager(object):
 		return screen
 		
 		
-	def play_music(self, file_path, new_volume = None):
+	def play_music(self, file_path, loop=-1, new_volume=None):
+		
 		# check for mixer
 		if not pygame.mixer.get_init():
 			pygame.mixer.init()
@@ -84,8 +90,8 @@ class StateManager(object):
 			music = pygame.mixer.music.load(file_path)
 			# set volume
 			pygame.mixer.music.set_volume(volume)
-			# set channel, and loop music
-			channel = pygame.mixer.music.play(-1)
+			# play music
+			pygame.mixer.music.play(loop)
 		
 		
 
@@ -124,6 +130,7 @@ class IntroScreenState(State):
 		
 		# load background image
 		self.bg = pygame.image.load(INTRO_BACKGROUND_PATH).convert()
+		
 		# load text surfaces and set default
 		self.text_image_white = XL_FONT.render("< press any key >", 0, WHITE)
 		self.text_image_grey = XL_FONT.render("< press any key >", 0, MENU_OPTION_COLOR)
@@ -201,6 +208,7 @@ class GameState(State):
 			# disable "resume game" option
 			self.state_mgr.main_menu.menu.options[0].greyed = True
 	
+	
 	def update(self):
 		# check for winner
 		self.check_for_win()
@@ -240,6 +248,7 @@ class GameState(State):
 			self.screen.blit(self.map.view.event_text, self.map.view.event_text_rect)
 
 
+
 class MenuState(State):
 	'''Parent class for menus'''
 	def __init__(self, state_mgr):
@@ -264,6 +273,10 @@ class MenuState(State):
 		
 	def go_to_main_menu(self):
 		self.state_mgr.go_to(self.state_mgr.main_menu)
+		
+		# check if music is playing, otherwise play intro music
+		if not pygame.mixer.music.get_busy():
+			self.state_mgr.play_music(INTRO_MUSIC_PATH)
 	
 	def go_to_choose_map(self):
 		self.state_mgr.go_to(self.state_mgr.choose_map_menu)
@@ -276,6 +289,10 @@ class MenuState(State):
 		
 	def go_to_display(self):
 		self.state_mgr.go_to(self.state_mgr.display_menu)
+		
+	def go_to_credits(self):
+		self.state_mgr.credits.reset_position()
+		self.state_mgr.go_to(self.state_mgr.credits)	
 		
 	def resume_game(self):
 		self.state_mgr.go_to(self.state_mgr.game)
@@ -305,13 +322,14 @@ class MainMenuState(MenuState):
 		# set name
 		self.name = "Main Menu"
 		
-		# init parent class
+		# parent class init
 		MenuState.__init__(self, state_mgr)
 		
 		# add menu options
 		self.menu.options.append( MenuOption(self.menu, "Resume Game", self.resume_game, greyed=True) )
 		self.menu.options.append( MenuOption(self.menu, "New Game", self.go_to_choose_map) )
 		self.menu.options.append( MenuOption(self.menu, "Options", self.go_to_options) )
+		self.menu.options.append( MenuOption(self.menu, "Credits", self.go_to_credits) )
 		self.menu.options.append( MenuOption(self.menu, "Quit", self.quit) )
 		
 		# set option positioning
@@ -325,7 +343,7 @@ class OptionsMenuState(MenuState):
 		# set name
 		self.name = "Options"
 		
-		# init parent class
+		# parent class init
 		MenuState.__init__(self, state_mgr)
 		
 		# add menu options
@@ -347,39 +365,35 @@ class SoundMenuState(MenuState):
 		# set name
 		self.name = "Options"
 		
-		# init parent class
+		# parent class init
 		MenuState.__init__(self, state_mgr)
 		
 		# add menu options
 		self.menu.options.append( MenuOption(self.menu, "Music: ON", self.toggle_music) )
-		#self.menu.options.append( MenuOption(self.menu, "Effects: ON", self.toggle_effects) )
+		self.menu.options.append( MenuOption(self.menu, "Effects: ON", self.toggle_effects) )
 		self.menu.options.append( MenuOption(self.menu, "Back to Options", self.go_to_options) )
-		
-		# set sound toggles
-		self.music_on = True
-		self.effects_on = True
 		
 		# set option positioning
 		self.set_rects()
 		
 
 	def toggle_music(self):
-		if self.music_on:
+		if self.state_mgr.music:
 			pygame.mixer.music.set_volume(0)
-			self.music_on = False
+			self.state_mgr.music = False
 			self.menu.options[0].text = "Music: OFF"
 		else:
 			pygame.mixer.music.set_volume(VOLUME)
-			self.music_on = True
+			self.state_mgr.music = True
 			self.menu.options[0].text = "Music: ON"
 
 
 	def toggle_effects(self):
-		if self.effects_on:
-			self.effects_on = False
+		if self.state_mgr.sound_effects:
+			self.state_mgr.sound_effects = False
 			self.menu.options[1].text = "Effects: OFF"
 		else:
-			self.effects_on = True
+			self.state_mgr.sound_effects = True
 			self.menu.options[1].text = "Effects: ON"
 
 
@@ -390,7 +404,7 @@ class DisplayMenuState(MenuState):
 		# set name
 		self.name = "Options"
 		
-		# init parent class
+		# parent class init
 		MenuState.__init__(self, state_mgr)
 		
 		# add menu options
@@ -424,7 +438,7 @@ class ChooseMapMenuState(MenuState):
 			# set name
 			self.name = "Options"
 		
-			# init parent class
+			# parent class init
 			MenuState.__init__(self, state_mgr)
 		
 			# add menu options
@@ -451,23 +465,29 @@ class ChooseMapMenuState(MenuState):
 			
 
 class GameOverMenuState(MenuState):
-		'''Game over menu, shows the end result'''
+		'''Game over menu, shows the end result.'''
 		
 		def __init__(self, state_mgr, winner):
 			# set name
 			self.name = "Options"
 		
-			# init parent class
+			# parent class init
 			MenuState.__init__(self, state_mgr)
 		
 			# get game over banner image
 			self.image = pygame.image.load(GAME_OVER_BANNER_PATH).convert_alpha()
-			# get text based on who own
+			
+			# set text and music based on who own
 			if winner == 1:
 				self.text = "You Won!"
+				self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
 			else:
 				self.text = "You Lost!"
+				self.state_mgr.play_music(LOSE_MUSIC_PATH, loop=0)
+				
+			# draw text
 			self.text = XXL_FONT.render(self.text, True, BLACK)
+			
 			# blit text on image
 			self.image.blit(self.text, self.text.get_rect(center=self.image.get_rect().center))
 			
@@ -478,17 +498,115 @@ class GameOverMenuState(MenuState):
 			
 			# add back to main menu option
 			self.menu.options.append( MenuOption(self.menu, "Go to Main Menu", self.go_to_main_menu) )
+			
 			# set menu option positioning below the banner
 			self.menu.options[0].rect.centerx = self.screen.get_rect().centerx
 			self.menu.options[0].rect.top = self.screen.get_height() - self.screen.get_height() / 5
-			
-			
-		
+
+
 		def draw(self):
-			# clear background
-			self.menu.screen.fill(BLACK)
+			# draw background
+			self.screen.blit(self.bg, (0,0))
 			# draw banner
 			self.screen.blit(self.image, self.image_rect)
 			# draw options
 			for option in self.menu.options:
 				option.draw()
+				
+				
+
+class CreditsState(State):
+	'''Scrolling credits.'''
+	
+	def __init__(self, state_mgr):
+		
+		# parent class init
+		State.__init__(self, state_mgr)
+		
+		# load background image
+		self.bg = pygame.image.load(MENU_BACKGROUND_PATH).convert()
+		
+		# use the same event handler as the intro screen
+		self.event_handler = self.state_mgr.intro_screen.event_handler
+		
+		# draw credits surface
+		self.draw_credits()
+	
+	
+	def get_credits(self):
+		'''Reads credits from the credits file.'''
+		
+		# add lines to list
+		credits = []
+		line_count = 0
+
+		file = open(CREDITS_PATH, 'r')
+
+		for line in file:
+			# remove new line characters
+			line = line.rstrip("\r\n")
+			# add to list
+			credits.append(line)
+			# increment line count
+			line_count += 1
+
+		file.close()
+		
+		# return text and line count
+		return credits, line_count
+	
+	
+	def draw_credits(self):
+		'''Draws a surface with the credits text.'''
+		
+		# get text and line count
+		self.text, self.line_count = self.get_credits()
+		
+		# create surface based on line count with line height 25px
+		self.image = pygame.Surface((self.screen.get_width(), self.line_count * 25), pygame.SRCALPHA)
+		
+		# set initial position below screen
+		self.rect = self.image.get_rect()
+		self.rect.top = self.screen.get_height() + 50
+		
+		# draw text lines on surface
+		line_count = 0
+		
+		for line in self.text:
+			
+			# lines ending with colon get a larger heading font
+			if line.endswith(":"):
+				text_image = XL_FONT.render(line, True, BLACK).convert_alpha()
+			else:
+				text_image = L_FONT.render(line, True, BLACK).convert_alpha()
+				
+			# position to center horizontally, and based on line count vertically
+			text_rect = text_image.get_rect()
+			text_rect.centerx = self.screen.get_rect().centerx
+			text_rect.top = line_count * 25
+			
+			self.image.blit(text_image, text_rect)
+			
+			line_count += 1
+			
+	
+	def reset_position(self):
+		'''Sets the position below the screen'''
+		self.rect.top = self.screen.get_height() + 50
+	
+	
+	def update(self):
+		'''Scrolls the credits up.'''
+		
+		self.rect.move_ip(0, -1)
+		
+		# warp back from bottom
+		if self.rect.top < (- self.image.get_height()):
+			self.reset_position()
+		
+	
+	def draw(self):
+		
+		self.screen.blit(self.bg, (0,0))
+		self.screen.blit(self.image, self.rect)
+		
