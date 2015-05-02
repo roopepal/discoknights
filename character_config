@@ -61,10 +61,17 @@ facing: right
 is_ai: false
 stand_sprites: {
 	right: hero2_right.gif
-	left: hero2_right.gif
-	up: hero2_right.gif
-	down: hero2_right.gif
+	left: hero2_left.gif
+	up: hero2_up.gif
+	down: hero2_down.gif
 }
+walk_sprites: {
+	up: hero2_walk1_up.gif, hero2_walk2_up.gif, hero2_walk3_up.gif, hero2_walk4_up.gif 
+	down: hero2_walk1_down.gif, hero2_walk2_down.gif, hero2_walk3_down.gif, hero2_walk4_down.gif
+	left: hero2_walk1_left.gif, hero2_walk2_left.gif, hero2_walk3_left.gif, hero2_walk4_left.gif
+	right: hero2_walk1_right.gif, hero2_walk2_right.gif, hero2_walk3_right.gif, hero2_walk4_right.gif
+}
+
 
 #Action
 character: B
@@ -92,9 +99,15 @@ facing: right
 is_ai: false
 stand_sprites: {
 	right: hero3_right.gif
-	left: hero3_right.gif
-	up: hero3_right.gif
-	down: hero3_right.gif
+	left: hero3_left.gif
+	up: hero3_up.gif
+	down: hero3_down.gif
+}
+walk_sprites: {
+	up: hero3_walk1_up.gif, hero3_walk2_up.gif, hero3_walk3_up.gif, hero3_walk4_up.gif 
+	down: hero3_walk1_down.gif, hero3_walk2_down.gif, hero3_walk3_down.gif, hero3_walk4_down.gif
+	left: hero3_walk1_left.gif, hero3_walk2_left.gif, hero3_walk3_left.gif, hero3_walk4_left.gif
+	right: hero3_walk1_right.gif, hero3_walk2_right.gif, hero3_walk3_right.gif, hero3_walk4_right.gif
 }
 
 #Action
@@ -112,7 +125,6 @@ max_range: 2
 name: Shoot
 
 //------------------------------------------------------------------
-
 
 // AI characters:
 
@@ -196,8 +208,8 @@ name: Poke
 name: F
 max_health: 100
 move_range: 3
-x: 10
-y: 10
+x: 9
+y: 7
 facing: left
 is_ai: true
 stand_sprites: {

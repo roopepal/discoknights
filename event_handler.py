@@ -4,38 +4,30 @@ from coordinates import Coordinates, map_to_screen, screen_to_map
 import pygame, sys
 
 class EventHandler(object):
-	def __init__(self):
-		pass
-		# Set events that are read
-		#pygame.event.set_allowed([
-		#	pygame.QUIT,
-		#	pygame.MOUSEBUTTONUP
-		#])
-	
+	def __init__(self, state):
+		
+		# set program state
+		self.state = state
+			
 	def handle(self, event):
+		# get mouse position
+		mouse_pos = pygame.mouse.get_pos()
+		
+		# update cursor position
+		self.state.state_mgr.cursor_pos = (mouse_pos)
+		
 		if event.type == pygame.QUIT:
 			pygame.quit()
 			sys.exit()
 		
 		# mouse clicks	
 		elif event.type == pygame.MOUSEBUTTONUP:
-			self.handle_click(pygame.mouse.get_pos())
+			self.handle_click(mouse_pos)
 			
 		# key presses
 		elif event.type == pygame.KEYDOWN:
-			# change state with number keys, DEBUG
-			if event.key == pygame.K_1:
-				self.state.state_mgr.go_to(self.state.state_mgr.game)
-			elif event.key == pygame.K_2:
-				self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
-			elif event.key == pygame.K_3:
-				self.state.state_mgr.go_to(self.state.state_mgr.options_menu)
-			
-			# handle key presses
-			else:
-				self.handle_key(event.key)
-			
-		# other events, e.g. mouse movement
+			self.handle_key(event.key)
+		
 		else:
 			self.handle_event(event)
 
@@ -43,11 +35,7 @@ class EventHandler(object):
 
 class IntroEventHandler(EventHandler):
 	def __init__(self, state):
-		EventHandler.__init__(self)
-		
-		# set program state
-		self.state = state
-	
+		EventHandler.__init__(self, state)
 	
 	def skip(self):
 		self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
@@ -65,10 +53,8 @@ class IntroEventHandler(EventHandler):
 
 class MenuEventHandler(EventHandler):
 	def __init__(self, state, menu):
-		EventHandler.__init__(self)
+		EventHandler.__init__(self, state)
 		
-		# set program state
-		self.state = state
 		# set menu
 		self.menu = menu
 		
@@ -103,10 +89,8 @@ class MenuEventHandler(EventHandler):
 
 class GameEventHandler(EventHandler):
 	def __init__(self, state, mp):
-		EventHandler.__init__(self)
+		EventHandler.__init__(self, state)
 		
-		# set program state
-		self.state = state
 		# set map
 		self.map = mp
 		# selected action
@@ -148,7 +132,8 @@ class GameEventHandler(EventHandler):
 					self.selected_action = action
 				
 					# get action range
-					self.map.in_range = action.get_action_range()
+					self.map.set_in_range(action.range, character.coordinates, \
+										  ignore_characters=True, ignore_non_walkable=True)
 				
 					# update range on map view based on action type
 					if action.type == Action.DAMAGE or action.type == Action.STUN:
@@ -175,7 +160,7 @@ class GameEventHandler(EventHandler):
 				# if character has not moved, i.e. should move now
 				if not character.has_moved:
 					# get shortest path to clicked square
-					self.map.in_range = character.get_movement_range()
+					self.map.set_in_range(character.range, character.coordinates)
 					path = character.get_shortest_path(coordinates)
 			
 					# if path was found
@@ -190,9 +175,9 @@ class GameEventHandler(EventHandler):
 				# if action was selected
 				elif self.selected_action:
 					# get square clicked
-					square = self.map.get_square_at(coordinates)
+					square = self.map.square_at(coordinates)
 					# if square is in range
-					if square.coordinates in self.map.in_range:
+					if coordinates in self.map.in_range:
 						# if there is a character in the square clicked
 						if square.character:
 							# use action

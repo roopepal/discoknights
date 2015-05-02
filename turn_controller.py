@@ -35,38 +35,43 @@ class TurnController(object):
 
 
 	def next(self):
-		# get next character
-		current_index = self.characters.index(self.current_character)
-		if current_index < ( len(self.characters) - 1 ):
-			self.current_character = self.characters[ current_index + 1 ]
-		else:
-			self.current_character = self.characters[0]
+		# update game state, including check for winner
+		self.map.state.update()
 		
-		# if character is stunned or dead, skip it
-		if self.current_character.stunned > 0:
-			# set message variable here also								#TODO!
-			self.current_character.stunned -= 1
-			self.next()
-		elif self.current_character.dead:
-			self.next()
-		
-		# if character is AI, handle movement
-		elif self.current_character.ai:
-			self.move_ai()
-		
-		# otherwise
-		else:	 
-			self.current_has_moved = False
-			ret = "Move or choose an action."
+		if self.map.state.running:
+			# get next character
+			current_index = self.characters.index(self.current_character)
+			
+			if current_index < ( len(self.characters) - 1 ):
+				self.current_character = self.characters[ current_index + 1 ]
+			else:
+				self.current_character = self.characters[0]
+			
+			# if character is stunned or dead, skip it
+			if self.current_character.stunned > 0:
+				# set message variable here also								#TODO!
+				self.current_character.stunned -= 1
+				self.next()
+			elif self.current_character.dead:
+				self.next()
 	
-			return ret
-			
-	def ai_use_action(self):
-		action, target_coordinates = self.ai.get_action()
+			# if character is AI, handle movement
+			elif self.current_character.ai:
+				self.ai_move()
+	
+			# otherwise
+			else:	 
+				self.current_has_moved = False
+				ret = self.map.view.trigger_event_text = "Move or choose an action"
+
+				return 
 		
-		# if got target, perform action
-		if target_coordinates:
-			action.perform(target_coordinates)
+	def ai_use_action(self):
+		action = self.ai.get_action()
+
+		# if got action, perform it
+		if action:
+			print(action.perform(self.current_character.target.coordinates))
 			
 			# end turn
 			self.current_character.end_turn()
@@ -75,7 +80,7 @@ class TurnController(object):
 			self.current_character.end_turn()
 		
 		
-	def move_ai(self):
+	def ai_move(self):
 		# get movement path
 		walk_path = self.ai.get_next_move()
 

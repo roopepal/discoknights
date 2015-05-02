@@ -1,13 +1,13 @@
 from square import Square
 from constants import *
-from coordinates import Coordinates, map_to_screen, screen_to_map
+from coordinates import Coordinates, map_to_screen
 from map_object import MapObject
+from map_view import MapView
 from object_type import ObjectType
+from queue import Queue
 from character import Character
 from turn_controller import TurnController
-from ui import Button
 import pygame, os
-
 
 
 class Map(object):
@@ -63,7 +63,8 @@ class Map(object):
 	
 	def start_game(self):
 		# update range
-		self.in_range = self.turn_controller.current_character.get_movement_range()
+		character = self.turn_controller.current_character
+		self.set_in_range(character.range, character.coordinates)
 		self.view.update_range = MOVEMENT
 		# update action buttons
 		self.view.update_action_buttons()
@@ -71,16 +72,14 @@ class Map(object):
 		self.view.update_char_info = True
 		
 	
-	def get_square_at(self, coordinates):
+	def square_at(self, coordinates):
 		if self.contains_coordinates(coordinates):
 			square = self.squares[coordinates.y][coordinates.x]
 			if square:
 				return square
 			else:
-				print("There is not square at ({:}, {:})".format(coordinates.x, coordinates.y))
 				return False
 		else:
-			print("Cannot get square from outside the map.")
 			return False
 	
 	
@@ -95,10 +94,10 @@ class Map(object):
 	 
 	  
 	def add_character(self, character, coordinates, facing):
-		if self.get_square_at(coordinates).is_empty():
+		if self.square_at(coordinates).is_empty():
 			# add to the map
 			self.characters.append(character)
-			self.get_square_at(coordinates).character = character
+			self.square_at(coordinates).character = character
 			
 			# add to the turn controller
 			self.turn_controller.add_character(character)
@@ -114,10 +113,10 @@ class Map(object):
 	
 	
 	def add_object(self, coordinates, map_object):
-		if self.get_square_at(coordinates).is_empty():
+		if self.square_at(coordinates).is_empty():
 			# add to the map
 			self.objects.append(map_object)
-			self.get_square_at(coordinates).object = map_object
+			self.square_at(coordinates).object = map_object
 			
 			# update the character's attributes
 			map_object.added_to_map(self, coordinates)
@@ -129,13 +128,71 @@ class Map(object):
 		# return True or False based on if the map contains the coordinates
 		return 0 <= coordinates.x < self.width and 0 <= coordinates.y < self.height
 	
-	
+
+	def set_in_range(self, max_range, start, ignore_characters=False, ignore_non_walkable=False):
+		'''
+		Sets the list of the coordinates that are within the given
+		range from the given start coordinates.
+		
+		Also sets the range_counts for squares to be used with the
+		get_shortest_path() method of the Character class.
+		
+		Based on the BFS algorithm.
+		'''
+		
+		in_range = []
+		queue = Queue()
+
+		# reset the status of all squares
+		for row in self.squares:
+			for square in row:
+				# visited flag
+				square.visited = False
+				# steps from start
+				square.range_count = 0
+		
+		# put the start coordinates into the queue
+		queue.put(start)
+		self.square_at(start).visited = True
+
+		while not queue.empty():
+			# get next coordinates from queue
+			current = queue.get()
+			# get neighboring coordinates
+			neighbors = current.get_neighbors()
+			for n in neighbors:
+				# get neighbor square at coordinates n
+				square = self.square_at(n)
+				# if there is a square at n
+				if square:
+					# if the square has not been visited
+					if square.visited == False:
+						# set range count from start to be one more than for the current square
+						square.range_count = self.square_at(current).range_count + 1
+						# if square is still within range, put in queue
+						if square.range_count <= max_range:
+							square.visited = True
+							# check for conditions given
+							if (ignore_characters and square.type.walkable and not square.object) \
+							  or (ignore_non_walkable and square.is_empty()) \
+							  or (square.type.walkable and square.is_empty()):
+								# put suitable coordinates in queue
+								queue.put(n)
+								# if not already in the list that will be returned, add
+								if not n in in_range:
+									in_range.append(n)
+								
+									
+		# return the list of coordinates
+		self.in_range = in_range		
+				
+
 	def get_simple_map(self):
 		# returns a simple command-line representation of the map as a string.
 		simple_map = ""
 		for y in range(self.height):
 			for x in range(self.width):
-				square = self.get_square_at( Coordinates(x,y) )
+				square = self.square_at( Coordinates(x,y) )
 				# get the first letter of the character's name
 				if square.character:
 					simple_map = simple_map + square.character.name[0] + " "
@@ -145,236 +202,21 @@ class Map(object):
 				# get the first letter of the square's type
 				else:
 					simple_map = simple_map + str(square.type)[0] + " "
+				# new line
+				simple_map = simple_map + "\n"
 		return simple_map
-
-
-
-class MapView(object):
-	'''
-	Defines a view for the Map object.
-	'''
-	
-	def __init__(self, map_object):
-		# set map
-		self.map = map_object
 		
-		# set screen
-		self.screen = self.map.state.screen
-		
-		# calculate the pixel width and height of the map to be drawed
-		self.width = (self.map.width + self.map.height) * TILE_W / 2 
-		self.height = (self.map.width + self.map.height) * TILE_H / 2 + 8	# 8 is the 'thickness' of a square
-		
-		# set draw offset to center the map horizontally on the surface
-		self.draw_offset_x = self.width / 2 - TILE_W / 2
-		
-		# initialize map base and range surfaces
-		self.squares_image = pygame.Surface( (self.width, self.height), pygame.SRCALPHA )
-		self.range_image = pygame.Surface( (self.width, self.height), pygame.SRCALPHA )
-		self.rect = self.squares_image.get_rect()
-		
-		# center the map image in the game window
-		self.center_in_window()
-		
-		# draw squares
-		self.draw_squares()
-		
-		# init range update state
-		self.update_range = False
-		
-		# load range indicators
-		self.load_indicators()
-		
-		# load bottom menu
-		self.load_bottom_menu_bg()
-		self.end_turn_btn = Button(self, END_TURN_PATH, END_TURN_HOVER_PATH, END_TURN_PUSH_PATH, "End Turn", L_FONT, WHITE)
-		self.end_turn_btn.set_rect((self.screen.get_width() - self.end_turn_btn.rect.width - 7, self.screen.get_height() - self.end_turn_btn.rect.height - 7))
-		
-		# load character info backgrounds
-		self.char_info_bg = pygame.image.load(CHAR_INFO_BG_PATH).convert_alpha()
-		self.char_info_turn = pygame.image.load(CHAR_INFO_TURN_PATH).convert_alpha()
-		self.char_info_dead = pygame.image.load(CHAR_INFO_DEAD_PATH).convert_alpha()
-		
-		# init character info update state
-		### name differs from the method to reveal the method outside also
-		self.update_char_info = False
-		
-		
-	def center_in_window(self):
-		# center the map view's rectangle in the window
-		self.rect.center = self.screen.get_rect().center
-	
-	
-	def load_indicators(self):
-		# load range indicator image
-		self.move_range_ind = pygame.image.load(MOVE_RANGE_IND_PATH).convert_alpha()
-		self.attack_range_ind = pygame.image.load(ATTACK_RANGE_IND_PATH).convert_alpha()
-		self.heal_range_ind = pygame.image.load(HEAL_RANGE_IND_PATH).convert_alpha()
-	
-	
-	def load_bottom_menu_bg(self):
-		# load a narrow background image for the bottom bar
-		bottom_bar_piece = pygame.image.load(BOTTOM_BAR_PATH).convert()
-		
-		# prepare a surface the width of the screen and the height of the piece
-		bottom_bar = pygame.Surface( (self.screen.get_width(), bottom_bar_piece.get_height()) )
-		
-		# fill the bar with the pieces
-		for i in range( int(self.screen.get_width() / bottom_bar_piece.get_width()) ):
-			bottom_bar.blit(bottom_bar_piece, (bottom_bar_piece.get_width() * i, 0))
-			
-		# load action menu background
-		action_menu_bg = pygame.image.load(ACTION_MENU_PATH).convert_alpha()
-		
-		# create surface for combining action menu and bar
-		self.bottom_menu_bg = pygame.Surface( (self.screen.get_width(), action_menu_bg.get_height() + 7), pygame.SRCALPHA )
-		
-		# blit bar at bottom
-		self.bottom_menu_bg.blit(bottom_bar, bottom_bar.get_rect( bottom=self.bottom_menu_bg.get_rect().bottom ))
-
-		# blit action menu background at bottom left with a small margin
-		self.bottom_menu_bg.blit(action_menu_bg, action_menu_bg.get_rect( bottomleft=(7, self.bottom_menu_bg.get_rect().bottom - 7 )))
-
-	
-	def update_action_buttons(self):
-		# separate buttons and texts for button handling
-		self.action_buttons = []
-		self.action_texts = []
-		
-		# get actions for the character in turn
-		for action in self.map.turn_controller.current_character.actions:
-			# init button
-			button = Button(self, ACTION_BTN_PATH, ACTION_BTN_HOVER_PATH, ACTION_BTN_PUSH_PATH, "Use", S_FONT, WHITE)
-			self.action_buttons.append(button)
-			# set position
-			button.set_rect((17, self.screen.get_height() - 94 + 26 * self.action_buttons.index(button)))
-		
-			# get text
-			text = action.name + " (" + str(action.strength) + ")"
-			text = S_FONT.render(text, False, BLACK)
-			# set position
-			text_pos = text.get_rect()
-			text_pos.move_ip(65, self.screen.get_height() - 84 + self.action_buttons.index(button) * 26)
-			# add to list
-			self.action_texts.append((text, text_pos))
-	
-	
-	def update_character_info(self):
-		# prepare surface to draw on
-		self.character_info_image = pygame.Surface((self.screen.get_width(), self.char_info_bg.get_height() + 7))
-		
-		# count player and AI characters
-		plr_count = 0
-		ai_count = 0
-		
-		# get info for all characters
-		for character in self.map.characters:
-			# copy clean background
-			if character.dead:
-				background = self.char_info_dead.copy()
-			elif character == self.map.turn_controller.current_character:
-				background = self.char_info_turn.copy()
-			else:
-				background = self.char_info_bg.copy()
-			
-			# blit head image on background, clip only head
-			head_image = character.view.stand_images["right"]
-			head_image.set_clip(pygame.Rect(0,0, 20,20))
-			background.blit(head_image, (5,5), (8,5,24,24))
-
-			# get health text
-			text_line_1 = str(character.health) + "/"
-			text_line_2 = str(character.max_health)
-
-			# render text lines on background in correct position
-			t1 = S_FONT.render(text_line_1, 1, BLACK)
-			t2 = S_FONT.render(text_line_2, 1, BLACK)
-			t1_pos = t1.get_rect()
-			t1_pos.move_ip(0,36)
-			t1_pos.centerx = background.get_rect().centerx
-			background.blit(t1, t1_pos)
-			t2_pos = t2.get_rect()
-			t2_pos.move_ip(0,46)
-			t2_pos.centerx = background.get_rect().centerx
-			background.blit(t2, t2_pos)
-
-			# blit in the correct position depending on if character is AI or not
-			if character.ai:
-				self.character_info_image.blit(background, (self.screen.get_width() - (ai_count+1) * 34 - 5, 7))
-				ai_count += 1
-			else:
-				self.character_info_image.blit(background, (7 + plr_count* 34, 7))
-				plr_count += 1
+	def get_range_count_map(self):
+		# returns a simple command-line representation of the map as a string.
+		simple_map = ""
+		for y in range(self.height):
+			for x in range(self.width):
+				square = self.square_at( Coordinates(x,y) )
+				simple_map = simple_map + str(square.range_count) + " "
+				# balance spacing
+				if square.range_count < 10:
+					simple_map = simple_map + " "
+			# new line
+			simple_map = simple_map + "\n"
 				
-		# reset update state
-		self.update_char_info = False
-			
-	
-	def draw_squares(self):
-		for x in range(self.map.width):
-			for y in range(self.map.height):
-				square = self.map.get_square_at( Coordinates(x,y) )
-				
-				# convert map coordinates to screen coordinates
-				screen_x, screen_y = map_to_screen(x,y)
-				
-				# blit the square
-				self.squares_image.blit( square.type.image, (screen_x + self.draw_offset_x, screen_y) )
-				
-	
-	def draw_range(self, indicator):
-		# clear range image
-		self.range_image.fill(0)
-		
-		for coordinates in self.map.in_range:
-			# convert map coordinates to screen coordinates 
-			screen_x, screen_y = map_to_screen(coordinates.x, coordinates.y)
-			
-			# blit movement range indicator
-			self.range_image.blit( indicator, (screen_x + self.draw_offset_x, screen_y) )
-			
-			# release range update
-			self.update_range = False
-	
-	
-	def move(self, delta_x, delta_y):
-		self.rect.move_ip(delta_x, delta_y)
-	
-	
-	def update(self):
-		# update range if it has changed
-		if self.update_range == MOVEMENT:
-			self.draw_range(self.move_range_ind)
-		elif self.update_range == ATTACK:
-			self.draw_range(self.attack_range_ind)
-		elif self.update_range == HEAL:
-			self.draw_range(self.heal_range_ind)
-		
-		# update character info if it has changed
-		if self.update_char_info == True:
-			self.update_character_info()
-		
-		# update buttons
-		self.end_turn_btn.update()
-		for btn in self.action_buttons:
-			btn.update()
-	
-	
-	def draw(self):
-		# blit map and range
-		self.screen.blit(self.squares_image, self.rect)
-		self.screen.blit(self.range_image, self.rect)
-		
-		# blit character info
-		self.screen.blit(self.character_info_image, (0,0))
-		
-		# bottom menu background
-		self.screen.blit(self.bottom_menu_bg, self.bottom_menu_bg.get_rect(bottomleft=self.screen.get_rect().bottomleft))
-		# end turn button
-		self.end_turn_btn.draw()
-		# action buttons
-		for btn in self.action_buttons:
-			btn.draw()
-		# action texts, first index surface, second index position
-		for text in self.action_texts:
-			self.screen.blit(text[0], text[1])
+		return simple_map

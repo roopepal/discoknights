@@ -203,12 +203,12 @@ class ConfigReader(object):
 				coordinates = Coordinates(int(item["x"]), int(item["y"]))
 
 				# if there is a square and it is empty, add character there
-				if mp.contains_coordinates(coordinates) and mp.get_square_at(coordinates).type.walkable:
+				if mp.contains_coordinates(coordinates) and mp.square_at(coordinates).type.walkable:
 					mp.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
 
 				# otherwise print reason for failure
-				elif not mp.get_square_at(coordinates).type.walkable:
-					print("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, mp.get_square_at(coordinates).type.name))
+				elif not mp.square_at(coordinates).type.walkable:
+					print("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, mp.square_at(coordinates).type.name))
 				elif not mp.contains_coordinates(coordinates):
 					print("Cannot add character to {:}, out of bounds.".format(coordinates))
 
