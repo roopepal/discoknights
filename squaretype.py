@@ -7,7 +7,7 @@ class SquareType(object):
 	This class defines the types of squares on the map.
 	'''
 	
-	def __init__(self, name, short, walkable, sprite):
+	def __init__(self, name, short, walkable, sprite=None):
 		'''
 		Creates a new square type.
 		
@@ -21,7 +21,8 @@ class SquareType(object):
 		self.short = short
 		self.walkable = walkable
 		self.sprite = sprite
-		self.image = pygame.image.load( os.path.join(GRAPHICS_DIR, sprite) ).convert_alpha()
+		if self.sprite:
+			self.image = pygame.image.load( os.path.join(GRAPHICS_DIR, sprite) ).convert_alpha()
 		self.offset_y = 0
 	
 	def get_name(self):

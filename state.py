@@ -92,8 +92,8 @@ class StateManager(object):
 			pygame.mixer.music.set_volume(volume)
 			# play music
 			pygame.mixer.music.play(loop)
-		
-		
+
+	
 
 class State(object):
 	'''Super class for game states'''

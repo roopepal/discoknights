@@ -1,6 +1,6 @@
 from action import Action
 from character_view import CharacterView
-from constants import MOVEMENT
+from constants import MOVEMENT_RANGE
 from coordinates import screen_to_map
 from direction import *
 from queue import Queue
@@ -122,7 +122,7 @@ class Character(object):
 		# Update range to next character
 		next_char = self.map.turn_controller.current_character
 		self.map.set_in_range(next_char.range, next_char.coordinates)
-		self.map.view.update_range = MOVEMENT
+		self.map.view.update_range = MOVEMENT_RANGE
 		
 		# Update character info and actions
 		self.map.view.update_char_info = True
@@ -132,7 +132,8 @@ class Character(object):
 	def get_shortest_path(self, coordinates, ignore_range=False):
 		'''
 		Gets the shortest path from the character to the given
-		coordinates. Returns a list of coordinates.
+		coordinates. Returns a list of coordinates. If target
+		coodrinates are not in range, returns False.
 		
 		Assumes that the method get_movement_range() has been run
 		before this, so that the range_counts in squares are correct.
@@ -149,7 +150,6 @@ class Character(object):
 		
 		# if the target is not in range, there is no path there
 		if not ignore_range and not end in self.map.in_range:
-			print("Not in range, cannot get path.")
 			return False
 		
 		# trace back from the end
@@ -158,7 +158,7 @@ class Character(object):
 		while True:
 						
 			neighbors = end.get_neighbors()
-			
+
 			for n in neighbors:
 				# if n is the start point, the full path has been found
 				if n == start:
@@ -187,10 +187,17 @@ class Character(object):
 		target_square = self.map.square_at(target_coordinates)
 		
 		if target_square.type.walkable and target_square.is_empty():
+			# clear current square
 			self.map.square_at(self.coordinates).character = None
+			
+			# move self to new coordinates
 			self.coordinates = target_coordinates
+			
+			# update the new square's character to self
 			self.map.square_at(target_coordinates).character = self
+			
 			return True
+		
 		else:
 			return False
 		
@@ -199,6 +206,7 @@ class Character(object):
 		'''Moves one step to the given direction.'''
 		
 		self.turn_to_direction(direction)
+		
 		return self.move_forward()	  
 		
 		
@@ -206,44 +214,47 @@ class Character(object):
 		'''
 		Moves the character to the given target coordinates,
 		if the coordinates are within the move range of the character.
-		For command line use only.
+		For command line use and testing.
 		'''
-		
+
 		if not self.has_turn():
-			print("It's not {:}'s turn.".format(self.name))			# Debugging print
+			print("It's not {:}'s turn.".format(self.name))
 			return False
+
 		elif self.stunned:
 			print("{:} is stunned".format(self.name))
-		ret = False
-		
-		squares_within_range = self.within_range(self.range)
-		
-		if self.map.square_at(target) in squares_within_range:
-			shortest_path = self.get_shortest_path(target)
+			return False
+			
+		self.map.set_in_range(self.range, self.coordinates)
+
+		shortest_path = self.get_shortest_path(target)
+
+		if shortest_path:
+
 			for step in shortest_path:
-								
+
 				target_x = step.x
 				target_y = step.y
 				self_x = self.coordinates.x
 				self_y = self.coordinates.y
-				
+
+				# move and set return to true if success
 				if ( target_x - self_x == 0 ) and ( target_y - self_y == -1 ):
-					ret = self.move_to_direction(UP)
+					self.move_to_direction(UP)
 				if ( target_x - self_x == 1 ) and ( target_y - self_y == 0 ):
-					ret = self.move_to_direction(RIGHT)
+					self.move_to_direction(RIGHT)
 				if ( target_x - self_x == 0 ) and ( target_y - self_y == 1 ):
-					ret = self.move_to_direction(DOWN)
+					self.move_to_direction(DOWN)
 				if ( target_x - self_x == -1 ) and ( target_y - self_y == 0 ):
-					ret = self.move_to_direction(LEFT)
-			
+					self.move_to_direction(LEFT)
+
 			self.has_moved = True
-			return ret
-		
-		elif not self.map.square_at(target) in squares_within_range:
-			print("Out of range.")														# Debugging print
-		
+
+			return True
+
 		else:
-			return ret
-				
+			return False
+
+
 	def __str__(self):
 		return self.name

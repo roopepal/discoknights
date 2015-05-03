@@ -15,27 +15,28 @@ def main():
 	
 	# Main loop
 	while 1:
-		
+
 		# Lock maximum FPS
 		clock.tick(FPS)
-		
+
 		# Handle mouse and keyboard events
 		state_mgr.current_state.handle_events()
-		
+
 		# Update elements
 		state_mgr.current_state.update()
-		
+
 		# Draw elements
 		state_mgr.current_state.draw()
-		
+
 		# Draw cursor
 		state_mgr.current_state.draw_cursor()
-		
+
 		# Render screen
 		pygame.display.update()
-		
-		
+
+
 	pygame.quit()
 	sys.exit()
+
 
 if __name__ == "__main__": main()

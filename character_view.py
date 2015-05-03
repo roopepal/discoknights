@@ -51,13 +51,17 @@ class CharacterView(object):
 	def set_screen_pos(self):
 		# get position on map
 		map_pos = self.character.coordinates
+		
 		# convert to screen coordinates
 		screen_x, screen_y = map_to_screen(map_pos.x, map_pos.y)
+		
 		# add horizontal draw offset to prevent negative x coordinates
 		screen_x += self.character.map.view.draw_offset_x
+		
 		# add map offset on screen
 		screen_x += self.character.map.view.rect.topleft[0]
 		screen_y += self.character.map.view.rect.topleft[1]
+		
 		# set position on screen
 		self.rect.x = screen_x + self.draw_offset_x
 		self.rect.y = screen_y + self.draw_offset_y
@@ -129,9 +133,13 @@ class CharacterView(object):
 					# stop walking
 					self.character.walking = False
 					
-					# get AI action
+					# set standing image
+					self.image = self.stand_images[self.character.facing[1]]
+					
+					# set AI action
 					if self.character.ai:
-						self.character.map.turn_controller.ai_use_action()
+						# send event to event queue with timer
+						pygame.time.set_timer(AI_ACTION_EVENT, AI_DELAY)
 		
 		# if not walking
 		else:

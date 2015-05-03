@@ -29,22 +29,26 @@ class Map(object):
 		self.in_range = None
 		
 		
-	def build_squares(self, height, width, squares_input):
+	def build_squares(self, height, width, squares_input, init_view=True):
 		self.height = height
 		self.width = width
 				
 		# prepare empty slots for squares
 		self.squares = height * [None]
-		for y in range(height): 
+		for y in range(height):
 			self.squares[y] = width * [None]
 		
 		# fill slots with squares
 		for y in range(height):
 			for x in range(width):
-		
+				
 				# separate square type and possible object
 				input_parts = squares_input[y][x].split(".")
-		
+				
+				# only allow one object in square, print error but do not crash program
+				if len(input_parts) > 2:
+					print("There cannot be more than one object in a square. Only the first object added.")
+				
 				# if square type is defined, insert square				 
 				if input_parts[0] in self.squaretypes.keys():
 					self.squares[y][x] = Square( Coordinates(x,y), self.squaretypes[input_parts[0]] )
@@ -53,21 +57,24 @@ class Map(object):
 				if len(input_parts) > 1:
 					self.add_object( Coordinates(x,y), MapObject(self.object_types[input_parts[1]]) )
 		
-		# initialize MapView
-		self.view = MapView(self)
-		
-		# initialize MapObjectViews
-		for o in self.objects:
-			o.set_view()
+		if init_view:
+			# initialize MapView
+			self.view = MapView(self)
+			
+			# initialize MapObjectViews
+			for o in self.objects:
+				o.set_view()
 			
 	
 	def start_game(self):
 		# update range
 		character = self.turn_controller.current_character
 		self.set_in_range(character.range, character.coordinates)
-		self.view.update_range = MOVEMENT
+		self.view.update_range = MOVEMENT_RANGE
+		
 		# update action buttons
 		self.view.update_action_buttons()
+		
 		# update character info
 		self.view.update_char_info = True
 		
@@ -93,7 +100,7 @@ class Map(object):
 			self.object_types[object_type.short] = object_type
 	 
 	  
-	def add_character(self, character, coordinates, facing):
+	def add_character(self, character, coordinates, facing, init_view=True):
 		if self.square_at(coordinates).is_empty():
 			# add to the map
 			self.characters.append(character)
@@ -105,8 +112,9 @@ class Map(object):
 			# update the character's attributes
 			character.added_to_map(self,coordinates,facing)
 			
-			# initialize CharacterView
-			character.set_view()
+			if init_view:
+				# initialize CharacterView
+				character.set_view()
 			
 		else:
 			print("Square wasn't empty. Cannot add character.")

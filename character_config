@@ -250,3 +250,11 @@ strength: 20
 max_range: 1
 name: Poke
 sound: sword.ogg
+
+#Action
+character: F
+type: stun
+strength: 1
+max_range: 1
+name: Stun
+sound: punch.ogg

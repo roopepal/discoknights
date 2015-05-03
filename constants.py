@@ -10,13 +10,18 @@ FULLSCREEN = False
 FPS = 40
 HALF_SPEED_WALK = True
 
+AI_DELAY = 300
+AI_MOVE_EVENT = pygame.USEREVENT + 1
+AI_ACTION_EVENT = pygame.USEREVENT + 2
+
+
 # Map
 TILE_W = 64
 TILE_H = 32
 # Map range types
-MOVEMENT = 1
-ATTACK = 2
-HEAL = 3
+MOVEMENT_RANGE = 1
+ATTACK_RANGE = 2
+HEAL_RANGE = 3
 
 # Resource paths
 MAP_CONFIG = "map_config"
@@ -56,7 +61,7 @@ FONT_PATH = os.path.join(FONT_DIR, "coders_crux.ttf")
 S_FONT = pygame.font.Font(FONT_PATH, 14)
 M_FONT = pygame.font.Font(FONT_PATH, 16)
 L_FONT = pygame.font.Font(FONT_PATH, 24)
-XL_FONT = pygame.font.Font(FONT_PATH, 40)
+XL_FONT = pygame.font.Font(FONT_PATH, 42)
 XXL_FONT = pygame.font.Font(FONT_PATH, 90)
 
 # Music

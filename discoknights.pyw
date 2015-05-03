@@ -1,7 +1,7 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Disco Knights
-# Author: Roope Palomäki
+# Author: Roope Palomaki
 # Email: roope.palomaki@me.com
 
 import main

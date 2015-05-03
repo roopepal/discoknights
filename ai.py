@@ -28,19 +28,19 @@ class Ai(object):
 		closest_enemy_path_len = None
 
 		for t in possible_targets:
+
 			# check that character is reachable
 			reachable = False
 			if not self.map.square_at(t.coordinates).range_count == 0:
 				reachable = True
 
 			if reachable:
+
 				# get shortest path to the target
 				path = self.character.get_shortest_path(t.coordinates, ignore_range=True)
 				if path:
 					path_len = len(path)
-					
-					print(t, path_len)
-								
+													
 					if not closest_enemy_path_len or path_len < closest_enemy_path_len:
 						closest_enemy = t
 						closest_enemy_path = path
@@ -102,24 +102,31 @@ class Ai(object):
 			# A random term may affect the choice: a modifier drawn from 
 			# the normal distribution is added to the damage when choosing,
 			# so the AI is rational most of the time but not always. 
-			# If a stun action is possible, choose action or stun randomly.
+			# A stun action equals 20 damage plus the random term.
 			highest_damage = None
 			highest_damage_action = None
 			
 			for action in actions:
+				
+				# if action has enough range
 				if action.range >= distance_to_target:
+				
 					if action.type == Action.DAMAGE:
 						random_term = random.normalvariate(0, 7.75)
 						damage = action.strength + random_term
-					#elif action.type == Action.STUN:
-					#	 damage = 
+				
+					elif action.type == Action.STUN:
+						random_term = random.normalvariate(0, 7.75)
+						damage = 20 + random_term
 						
-					# if damage is higher than for any action so far
+					# if damage is higher than for any action so far, select this action
 					if highest_damage == None or damage > highest_damage:
 						highest_damage = damage
 						highest_damage_action = action
-					
+
 			return highest_damage_action
+
+		# if no action possible, return False
 		else:
 			return False
 

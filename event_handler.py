@@ -65,13 +65,17 @@ class MenuEventHandler(EventHandler):
 		
 	def handle_click(self, mouse_pos):
 		for option in self.menu.options:
+
 			# if option was clicked
 			if option.rect.collidepoint(pygame.mouse.get_pos()):
+
 				# if option is available and there is a function for it
 				if option.function and not option.greyed:
+
 					# if there is a function parameter
 					if not option.func_parameter == None :
 						option.function(option.func_parameter)
+
 					# else if no parameter
 					else:
 						option.function()
@@ -79,32 +83,56 @@ class MenuEventHandler(EventHandler):
 	
 	def handle_event(self, event):
 		for option in self.menu.options:
+			
+			# if mouse is over the option
 			if option.rect.collidepoint(pygame.mouse.get_pos()):
 				option.hovered = True
 				break
+
 			elif option.hovered:
 				option.hovered = False
 
 
 
 class GameEventHandler(EventHandler):
+	
 	def __init__(self, state, mp):
+		
 		EventHandler.__init__(self, state)
 		
 		# set map
 		self.map = mp
+		
 		# selected action
 		self.selected_action = None
 		
 	
 	def handle_event(self, event):
-		pass
+				
+		# handle AI movement and actions
+		## movement
+		if event.type == AI_MOVE_EVENT:
+			# make move
+			self.map.turn_controller.ai_move()
+			
+			# zero timer
+			pygame.time.set_timer(AI_MOVE_EVENT, 0)
+		
+		## actions	
+		elif event.type == AI_ACTION_EVENT:
+			# make move
+			self.map.turn_controller.ai_use_action()
+			
+			# zero timer
+			pygame.time.set_timer(AI_ACTION_EVENT, 0)
 	
 	
 	def handle_key(self, key):
 		if key == pygame.K_ESCAPE:
+
 			# go to menu with ESC
 			self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
+
 			# set Resume Game option not greyed out
 			self.state.state_mgr.main_menu.menu.options[0].greyed = False
 	
@@ -113,20 +141,22 @@ class GameEventHandler(EventHandler):
 		# get current character
 		character = self.map.turn_controller.current_character
 		
-		# if character is not walking
-		if not character.walking:
+		# if character is not walking and it is not AI's turn
+		if not character.walking and not character.ai:
 			# init status
 			click_handled = False
 			
 			# recognize end turn button
 			if self.map.view.end_turn_btn.rect.collidepoint(mouse_pos):
 				character.end_turn()
-				# set state
+
+				# set event handling state
 				click_handled = True
 		
 			# recognize action buttons
 			for button in self.map.view.action_buttons:
 				if button.rect.collidepoint(mouse_pos):
+
 					# get action
 					action = character.actions[self.map.view.action_buttons.index(button)]
 					self.selected_action = action
@@ -137,18 +167,19 @@ class GameEventHandler(EventHandler):
 				
 					# update range on map view based on action type
 					if action.type == Action.DAMAGE or action.type == Action.STUN:
-						self.map.view.update_range = ATTACK
+						self.map.view.update_range = ATTACK_RANGE
 					elif action.type == Action.HEAL:
-						self.map.view.update_range = HEAL
+						self.map.view.update_range = HEAL_RANGE
 				
 					# update character turn state
 					character.has_moved = True
 				
 					# set state
 					click_handled = True
-		
+
 			# if button was not clicked, get square clicked
 			if not click_handled:
+
 				# account for map positioning on screen
 				mouse_x = mouse_pos[0] - self.map.view.rect.left - self.map.view.width / 2
 				mouse_y = mouse_pos[1] - self.map.view.rect.top
@@ -159,6 +190,7 @@ class GameEventHandler(EventHandler):
 				
 				# if character has not moved, i.e. should move now
 				if not character.has_moved:
+
 					# get shortest path to clicked square
 					self.map.set_in_range(character.range, character.coordinates)
 					path = character.get_shortest_path(coordinates)
@@ -166,30 +198,36 @@ class GameEventHandler(EventHandler):
 					# if path was found
 					if path:
 						character.walking, character.walk_path = True, path
+
 						# clear range indicators on map
 						self.map.in_range = []
-						self.map.view.update_range = MOVEMENT
+						self.map.view.update_range = MOVEMENT_RANGE
 					else:
 						print("Out of range.")
 		
 				# if action was selected
 				elif self.selected_action:
+
 					# get square clicked
 					square = self.map.square_at(coordinates)
+
 					# if square is in range
 					if coordinates in self.map.in_range:
+
 						# if there is a character in the square clicked
 						if square.character:
+
 							# use action
 							self.selected_action.perform(coordinates)
+
 							# reset action selected
 							self.selected_action = None
+
 							# end turn
 							character.end_turn()
+
 						else:
+
 							# end turn
 							character.end_turn()
 							print("Missed!")
-							
-					
-				

@@ -20,16 +20,17 @@ class ConfigFileError(Exception):
 class ConfigReader(object):
 	'''A config file reader that builds maps and characters based on configuration files.'''
 	
-	def __init__(self):
+	def __init__(self, auto_open=True):
 		
-		# read config from files
-		file = open(MAP_CONFIG, 'r')
-		self.map_config = self.read_config(file)
-		file.close()
-		
-		file = open(CHARACTER_CONFIG, 'r')
-		self.character_config = self.read_config(file)
-		file.close()
+		if auto_open:
+			# read config from files
+			file = open(MAP_CONFIG, 'r')
+			self.map_config = self.read_config(file)
+			file.close()
+			
+			file = open(CHARACTER_CONFIG, 'r')
+			self.character_config = self.read_config(file)
+			file.close()
 	
 	
 	def check_parentheses(self, input):
@@ -37,9 +38,14 @@ class ConfigReader(object):
 		
 		stack = []
 		line_nr = 0
+		input.seek(0)
 		
 		for line in input:
 			line_nr += 1
+						
+			# ignore comment lines
+			if line.startswith("//"):
+				continue
 			
 			# for each character in the line
 			for char in line:
@@ -158,6 +164,7 @@ class ConfigReader(object):
 				if self.current_line == '' or self.current_line.startswith("//"):
 					nl()
 
+
 				elif ":" in self.current_line:
 					# split the line where there is a colon
 					line_parts = self.current_line.split(":")
@@ -212,6 +219,12 @@ class ConfigReader(object):
 						
 						# Go to the next line
 						nl()
+
+
+				# if there is content on the line but it cannot be recognized
+				else:
+					raise ConfigFileError("Cannot read config file. Unrecognized content on line {:}.".format(self.line_count))
+				
 
 		#print("The following config was created:")
 		#print(json.dumps(self.config, indent=2))
@@ -334,7 +347,7 @@ class ConfigReader(object):
 					if item2["id"].lower() == "action" and item2["character"] == new_character.name:
 
 						# if more than 3 actions have been given
-						if len(new_character.actions) > 3:
+						if len(new_character.actions) > 2:
 							print("A character cannot have more than 3 actions.")
 
 						# if at most 3 actions have been given
@@ -371,6 +384,10 @@ class ConfigReader(object):
 		for item in self.map_config:
 			if item["id"].lower() == "map":
 				count += 1
+				
+		# raise error if there are no maps at all
+		if count == 0:
+			raise ConfigFileError("No maps found in the config file!")
 		
 		return count
 	

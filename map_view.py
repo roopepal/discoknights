@@ -279,11 +279,11 @@ class MapView(object):
 	
 	def update(self):
 		# update range if it has changed
-		if self.update_range == MOVEMENT:
+		if self.update_range == MOVEMENT_RANGE:
 			self.draw_range(self.move_range_ind)
-		elif self.update_range == ATTACK:
+		elif self.update_range == ATTACK_RANGE:
 			self.draw_range(self.attack_range_ind)
-		elif self.update_range == HEAL:
+		elif self.update_range == HEAL_RANGE:
 			self.draw_range(self.heal_range_ind)
 		
 		# update character info if it has changed
@@ -296,8 +296,9 @@ class MapView(object):
 		# update effect text
 		self.update_event_text()
 		
-		# update buttons
+		# update buttons		
 		self.end_turn_btn.update()
+		
 		for btn in self.action_buttons:
 			btn.update()
 	
