@@ -15,7 +15,7 @@ class Menu(object):
 
 class MenuOption(object):
 	
-	def __init__(self, menu, text, function=None, greyed=False, func_parameter=None):
+	def __init__(self, menu, text, function=None, func_parameter=None, greyed=False):
 		# set parent menu
 		self.menu = menu
 		
@@ -82,8 +82,8 @@ class MenuOption(object):
 
 class MenuOptionMapImage(MenuOption):
 	'''Defines a menu option with a picture of a map.'''
-	def __init__(self, menu, text, function=None, greyed=False, func_parameter=None):
-		MenuOption.__init__(self, menu, text, function, greyed, func_parameter)
+	def __init__(self, menu, text, function=None, func_parameter=None, greyed=False ):
+		MenuOption.__init__(self, menu, text, function, func_parameter, greyed)
 		
 		# Build a picture of the map
 		## build the map with the config reader

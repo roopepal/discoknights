@@ -11,9 +11,10 @@ class Character(object):
 	Defines a game character.
 	'''
 	
-	def __init__(self, name, max_health, move_range, is_ai, stand_sprites, walk_sprites=None):
+	def __init__(self, name, team, max_health, move_range, is_ai, stand_sprites, walk_sprites=None):
 		'''Constructs a new game character.'''
 		self.name = name
+		self.team = team
 		self.coordinates = None
 		self.facing = None
 		self.map = None
@@ -21,6 +22,7 @@ class Character(object):
 		self.health = max_health
 		self.range = move_range
 		self.actions = []
+		self.buff_multiplier = 1
 		self.stunned = 0
 		
 		# AI
@@ -38,11 +40,15 @@ class Character(object):
 		self.walk_to = None
 	
 	
-	def added_to_map(self, current_map, coordinates, facing):
+	def added_to_map(self, current_map, coordinates, facing, init_view=True):
 		# Updates the character's attributes when the character is added to a map.
 		self.map = current_map
 		self.coordinates = coordinates
 		self.facing = facing
+		
+		if init_view:
+			# initialize CharacterView with correct 
+			self.set_view()
 		
 		
 	def set_view(self):
@@ -56,6 +62,7 @@ class Character(object):
 		if self.health <= 0:
 			self.dead = True
 			self.health = 0
+			self.map.square_at(self.coordinates).character = None
 
 	
 	def stun(self, turns):
@@ -70,24 +77,14 @@ class Character(object):
 			self.health = self.max_health
 	
 	
-	def add_action(self, action_type, strength, action_range, name, sound):
+	def buff(self, multiplier):
+		# Buffs the character's damage and heal actions for the next turn
+		self.buff_multiplier = multiplier
+		 
+	
+	def add_action(self, action_type, strength, action_range, name, sound=None):
 		# Adds an action that the character can perform.
 		self.actions.append( Action(self, action_type, strength, action_range, name, sound) )
-		
-		
-	def use_action(self, index, target_coordinates):
-		'''Uses the action at the given index. For command line use only.'''
-		# Performs the given action at the given target coordinates.
-		if not self.has_turn():
-			print("It's not {:}'s turn.".format(self.name))
-			return False
-		elif self.stunned > 0:
-			print("{:} is stunned.".format(self.name))
-			return False
-		else:
-			self.actions[index-1].perform(target_coordinates)
-			self.end_turn()
-			return True
 	
 	
 	def turn_to_direction(self, direction):
@@ -127,57 +124,6 @@ class Character(object):
 		# Update character info and actions
 		self.map.view.update_char_info = True
 		self.map.view.update_action_buttons()
-
-			
-	def get_shortest_path(self, coordinates, ignore_range=False):
-		'''
-		Gets the shortest path from the character to the given
-		coordinates. Returns a list of coordinates. If target
-		coodrinates are not in range, returns False.
-		
-		Assumes that the method get_movement_range() has been run
-		before this, so that the range_counts in squares are correct.
-
-		Based on the Lee algorithm.
-		'''
-
-		start = self.coordinates
-		end = coordinates
-		path = []
-				
-		# last step is known, it is the target coordinates
-		path.append(end)
-		
-		# if the target is not in range, there is no path there
-		if not ignore_range and not end in self.map.in_range:
-			return False
-		
-		# trace back from the end
-		current_range_count = self.map.square_at(end).range_count 
-		
-		while True:
-						
-			neighbors = end.get_neighbors()
-
-			for n in neighbors:
-				# if n is the start point, the full path has been found
-				if n == start:
-					# reverse path because we started from the end
-					path.reverse()
-					return path
-
-				square = self.map.square_at(n)
-
-				# if square is reachable, has a smaller range count from 
-				# the starting point, and is walkable and empty
-				if square and not square.range_count == 0 and square.range_count < current_range_count \
-				  and square.type.walkable and square.is_empty():
-					# add to the shortest path
-					path.append(n)
-					# go on to finding the next step
-					end = n
-					current_range_count = self.map.square_at(end).range_count
-					break
 						
 	
 	def move_forward(self):
@@ -186,17 +132,18 @@ class Character(object):
 		target_coordinates = self.coordinates.get_neighbor(self.facing)
 		target_square = self.map.square_at(target_coordinates)
 		
-		if target_square.type.walkable and target_square.is_empty():
-			# clear current square
-			self.map.square_at(self.coordinates).character = None
+		if target_square:
+			if target_square.type.walkable and target_square.is_empty():
+				# clear current square
+				self.map.square_at(self.coordinates).character = None
 			
-			# move self to new coordinates
-			self.coordinates = target_coordinates
+				# move self to new coordinates
+				self.coordinates = target_coordinates
 			
-			# update the new square's character to self
-			self.map.square_at(target_coordinates).character = self
+				# update the new square's character to self
+				self.map.square_at(target_coordinates).character = self
 			
-			return True
+				return True
 		
 		else:
 			return False
@@ -224,10 +171,10 @@ class Character(object):
 		elif self.stunned:
 			print("{:} is stunned".format(self.name))
 			return False
-			
+
 		self.map.set_in_range(self.range, self.coordinates)
 
-		shortest_path = self.get_shortest_path(target)
+		shortest_path = self.map.get_shortest_path(self.coordinates, target)
 
 		if shortest_path:
 

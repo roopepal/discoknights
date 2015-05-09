@@ -8,7 +8,7 @@ from coordinates import Coordinates
 import direction
 
 # can be used to get json representation of the config after reading
-#import json
+import json
 
 class ConfigFileError(Exception):
 	'''Defines an exception that the config reader throws in case of a corrupted file.'''
@@ -131,9 +131,12 @@ class ConfigReader(object):
 		# check header
 		header_parts = self.current_line.split()
 		
+		if not len(header_parts) == 3:
+			raise ConfigFileError("Unknown file type. Check file header.")
+		
 		if header_parts[0] != "DISCO":
 			raise ConfigFileError("Unknown file type. Check file header.")
-
+			
 		if header_parts[1] != "KNIGHTS":
 			raise ConfigFileError("Unknown file type. Check file header.")
 
@@ -234,14 +237,18 @@ class ConfigReader(object):
 
 	
 	def build_map_base(self, state, map_config, map_index):
-		'''Build a map without characters.'''
-		
+		'''Build a map without characters from the given config dictionary.'''
+
+		# Check that map_config is a list
+		if not isinstance(map_config, list):
+			raise ConfigFileError("Wrong type of config input given.")
+
 		# Initialize Map object
 		mp = Map(state)
 		
 		# Build map
 		for item in map_config:
-						
+
 			# Square types
 			if item["id"].lower() == "squaretype":
 				print("Building squaretype '{:}'...".format(item["name"]))
@@ -256,6 +263,8 @@ class ConfigReader(object):
 						item["sprite"]
 						)
 					)
+				except pygame.error:
+					raise ConfigFileError("There was a problem building the square type '{:}'. Could not find sprite '{:}'.".format(item["name"], item["sprite"]))
 				except:
 					raise ConfigFileError("There was a problem building the square type '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
 
@@ -274,6 +283,8 @@ class ConfigReader(object):
 						int(item["offset_y"])
 						)
 					)
+				except pygame.error:
+					raise ConfigFileError("There was a problem building the object type '{:}'. Could not find sprite '{:}'.".format(item["name"], item["sprite"]))
 				except:
 					raise ConfigFileError("There was a problem building the object type '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
 			
@@ -285,8 +296,10 @@ class ConfigReader(object):
 				try:
 					mp.build_squares(
 					int( item["height"] ), 
-					int( item["width"] ), 
-					item["squares"]
+					int( item["width"] ),
+					item["squares"],
+					item["team1_start"],
+					item["team2_start"]
 					)
 				except:
 					raise ConfigFileError("There was a problem building map number {:}. Make sure the map configuration file is properly formatted.".format(item["index"])) 
@@ -297,6 +310,10 @@ class ConfigReader(object):
 
 	def build_characters_on_map(self, character_config, mp):
 		'''Builds characters on a map and returns the map back.'''
+		
+		# counters for start positions
+		team1_count = 0
+		team2_count = 0
 		
 		# Characters and actions
 		for item in character_config:
@@ -311,10 +328,15 @@ class ConfigReader(object):
 				else:
 					walk_sprites = None
 				
+				# check that team number is 1 or 2
+				if int(item["team"]) not in [1, 2]:
+					raise ConfigFileError("A character can only be in team 1 or team 2. Make sure the map configuration file is properly formatted.")
+				
 				# Try creating a new Character object
 				try:
 					new_character = Character(
 										item["name"],
+										int(item["team"]),
 										int(item["max_health"]),
 										int(item["move_range"]),
 										item["is_ai"].lower() == "true",
@@ -322,23 +344,41 @@ class ConfigReader(object):
 										walk_sprites
 										)
 				except:
-					raise ConfigFileError("There was a problem building character '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
- 
-				# try to read coordinates to add character at
+					raise ConfigFileError("There was a problem building character '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))				
+				
+				# try to get coordinates to add character at
 				try:
-					coordinates = Coordinates(int(item["x"]), int(item["y"]))
+					if new_character.team == 1:
+						start_x = int(mp.team1_start[team1_count][0])
+						start_y = int(mp.team1_start[team1_count][1])
+						team1_count += 1
+						
+					if new_character.team == 2:
+						start_x = int(mp.team2_start[team2_count][0])
+						start_y = int(mp.team2_start[team2_count][1])
+						team2_count += 1
+						
+					coordinates = Coordinates(start_x, start_y)
+				
+				# an index error means that there are not enough start positions for all characters,
+				# desired behavior is to add as many as have been given start coordinates
+				except IndexError:
+					print("Not enough start coordinates, did not add character..")
+				
 				except:
-					raise ConfigFileError("Invalid coordinates for character '{:}'. Make sure the map configuration file is properly formatted.".format(item["name"]))
+					raise ConfigFileError("Invalid team {:} character start coordinates. Make sure the map configuration file is properly formatted.".format(new_character.team))
 
 				# if there is a square and it is empty, add character there
 				if mp.contains_coordinates(coordinates) and mp.square_at(coordinates).type.walkable:
-					mp.add_character(new_character, Coordinates(int(item["x"]), int(item["y"])), getattr(direction, item["facing"].upper()))
+					mp.add_character(new_character, coordinates, getattr(direction, item["facing"].upper()))
 
+				elif not mp.contains_coordinates(coordinates):
+					raise ConfigFileError("Cannot add character to {:}, out of map bounds.".format(coordinates))
+				
 				# otherwise print reason for failure, without crashing the whole program
 				elif not mp.square_at(coordinates).type.walkable:
-					print("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, mp.square_at(coordinates).type.name))
-				elif not mp.contains_coordinates(coordinates):
-					print("Cannot add character to {:}, out of bounds.".format(coordinates))
+					raise ConfigFileError("Cannot add character to {:}, square type '{:}' not walkable.".format(coordinates, mp.square_at(coordinates).type.name))
+
 
 				# Create actions for characters, loops over all items again to find all actions even if they come before the character
 				for item2 in character_config:
@@ -360,17 +400,23 @@ class ConfigReader(object):
 							else:
 								sound = None
 							
+							# use floating point numbers where there is a decimal
+							if "." in item2["strength"]:
+								strength = float(item2["strength"])
+							else:
+								strength = int(item2["strength"])
+							
 							# try adding the action
 							try:
 								new_character.add_action(
 									getattr(Action, item2["type"].upper()),
-									int(item2["strength"]),
+									strength,
 									int(item2["max_range"]),
 									item2["name"],
 									sound
 									)
 							except:
-								raise ConfigFileError("Could not add action to character '{:}'. Make sure the map configuration file is properly formatted.".format(new_character.name))
+								raise ConfigFileError("Could not add action to character '{:}'. Make sure the character configuration file is properly formatted.".format(new_character.name))
 		
 		# Return the map back with the characters
 		return mp

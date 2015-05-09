@@ -74,11 +74,11 @@ class TurnController(object):
 		
 	def ai_use_action(self):
 		
-		action = self.ai.get_action()
+		action, target = self.ai.get_action()
 
 		# if got action, perform it
 		if action:
-			print(action.perform(self.current_character.target.coordinates))
+			print(action.perform(target.coordinates))
 			
 			# end turn
 			self.current_character.end_turn()

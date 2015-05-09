@@ -24,15 +24,20 @@ class Map(object):
 		self.squaretypes = {}
 		self.object_types = {}
 		self.turn_controller = TurnController(self)
-		
+
 		# list of coordinates in range for character movement and actions
 		self.in_range = None
-		
-		
-	def build_squares(self, height, width, squares_input, init_view=True):
+
+
+	def build_squares(self, height, width, squares_input, team1_start, team2_start, init_view=True):
+		# set dimensions
 		self.height = height
 		self.width = width
-				
+		
+		# set starting positions for characters
+		self.team1_start = team1_start
+		self.team2_start = team2_start
+
 		# prepare empty slots for squares
 		self.squares = height * [None]
 		for y in range(height):
@@ -101,6 +106,9 @@ class Map(object):
 	 
 	  
 	def add_character(self, character, coordinates, facing, init_view=True):
+		'''Adds the given character on the map, and updates the turn controller's
+		and the character's attributes.'''
+		
 		if self.square_at(coordinates).is_empty():
 			# add to the map
 			self.characters.append(character)
@@ -110,17 +118,15 @@ class Map(object):
 			self.turn_controller.add_character(character)
 			
 			# update the character's attributes
-			character.added_to_map(self,coordinates,facing)
-			
-			if init_view:
-				# initialize CharacterView
-				character.set_view()
+			character.added_to_map(self,coordinates,facing, init_view=init_view)
 			
 		else:
 			print("Square wasn't empty. Cannot add character.")
 	
 	
 	def add_object(self, coordinates, map_object):
+		'''Adds the given object on the map, and updates the object's attributes.'''
+		
 		if self.square_at(coordinates).is_empty():
 			# add to the map
 			self.objects.append(map_object)
@@ -133,7 +139,8 @@ class Map(object):
 	
 	
 	def contains_coordinates(self, coordinates):
-		# return True or False based on if the map contains the coordinates
+		'''Returns True or False based on if the map contains the given coordinates.'''
+		
 		return 0 <= coordinates.x < self.width and 0 <= coordinates.y < self.height
 	
 
@@ -189,15 +196,66 @@ class Map(object):
 								# if not already in the list that will be returned, add
 								if not n in in_range:
 									in_range.append(n)
-								
-									
+
+	
 		# return the list of coordinates
-		self.in_range = in_range		
-				
+		self.in_range = in_range
+
+
+	def get_shortest_path(self, start, end, ignore_range=False):
+		'''
+		Gets the shortest path from the character to the given
+		coordinates. Returns a list of coordinates. If target
+		coodrinates are not in range, returns False, unless
+		ignore_range flag is set True.
+
+		Assumes that the method get_movement_range() has been run
+		before this, so that the range_counts in squares are correct.
+
+		Based on the Lee algorithm.
+		'''
+
+		path = []
+
+		# last step is known, it is the target coordinates
+		path.append(end)
+		
+		# if the target is not in range, there is no path there
+		if not ignore_range and not end in self.in_range:
+			return False
+		
+		# trace back from the end point
+		current_range_count = self.square_at(end).range_count 
+		
+		while True:
+
+			neighbors = end.get_neighbors()
+
+			for n in neighbors:
+				# if n is the start point, the path is complete
+				if n == start:
+					# reverse path because we started from the end
+					path.reverse()
+					return path
+
+				square = self.square_at(n)
+
+				# if square is reachable, has a smaller range count from 
+				# the starting point, and is walkable and empty
+				if square and not square.range_count == 0 and square.range_count < current_range_count \
+				  and square.type.walkable and square.is_empty():
+					# add to the shortest path
+					path.append(n)
+					# go on to finding the next step
+					end = n
+					current_range_count = self.square_at(end).range_count
+					break
+
 
 	def get_simple_map(self):
 		# returns a simple command-line representation of the map as a string.
 		simple_map = ""
+		
 		for y in range(self.height):
 			for x in range(self.width):
 				square = self.square_at( Coordinates(x,y) )
@@ -210,21 +268,24 @@ class Map(object):
 				# get the first letter of the square's type
 				else:
 					simple_map = simple_map + str(square.type)[0] + " "
-				# new line
-				simple_map = simple_map + "\n"
-		return simple_map
+			# new line
+			simple_map = simple_map + "\n"
 		
+		return simple_map
+
+
 	def get_range_count_map(self):
 		# returns a simple command-line representation of the map as a string.
-		simple_map = ""
+		range_count_map = ""
+		
 		for y in range(self.height):
 			for x in range(self.width):
 				square = self.square_at( Coordinates(x,y) )
-				simple_map = simple_map + str(square.range_count) + " "
+				range_count_map = range_count_map + str(square.range_count) + " "
 				# balance spacing
 				if square.range_count < 10:
-					simple_map = simple_map + " "
+					range_count_map = range_count_map + " "
 			# new line
-			simple_map = simple_map + "\n"
+			range_count_map = range_count_map + "\n"
 				
-		return simple_map
+		return range_count_map

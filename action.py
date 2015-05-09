@@ -1,5 +1,4 @@
-from constants import MUSIC_DIR
-from queue import Queue
+from constants import MUSIC_DIR, RED, GREEN
 import pygame, os
 
 class Action(object):
@@ -8,6 +7,7 @@ class Action(object):
 	DAMAGE = 1
 	HEAL = 2
 	STUN = 3
+	BUFF = 4
 	
 	def __init__(self, character, action_type, strength, action_range, name, sound=None):
 		self.type = action_type
@@ -35,21 +35,43 @@ class Action(object):
 		
 		# If no character at the target coordinates
 		if not target_character:
-			print("Missed!")
 			return "Missed!"
+			
+			# Reset buff multiplier
+			self.character.buff_multiplier = 1
 		
 		else:
 			if self.type == Action.DAMAGE:
-				target_character.damage(self.strength)
+				target_character.damage(self.strength * self.character.buff_multiplier)
+				effect_text = "-" + str(self.strength * self.character.buff_multiplier)
+				color = RED
+				
 			elif self.type == Action.HEAL:
-				target_character.heal(self.strength)
+				target_character.heal(self.strength * self.character.buff_multiplier)
+				effect_text = "+" + str(self.strength * self.character.buff_multiplier)
+				color = GREEN
+				
 			elif self.type == Action.STUN:
 				target_character.stun(self.strength)
+				effect_text = "STUN"
+				color = RED
+				
+			elif self.type == Action.BUFF:
+				target_character.buff(self.strength)
+				if self.strength < 1:
+					effect_text = "WEAKEN"
+					color = RED
+				else:
+					effect_text = "BUFF"
+					color = GREEN
 			
-			# update effect text
-			self.character.map.view.trigger_effect_text = (self, target_coordinates)
+			# trigger effect text
+			self.character.map.view.trigger_effect_text(effect_text, color, target_coordinates)
 			
-			return "Used '" + self.name + "' on " + self.character.map.square_at(target_coordinates).character.name
+			# Reset buff multiplier
+			self.character.buff_multiplier = 1
+			
+			return "Used '" + self.name + "!"
 
 
 	def __str__(self):

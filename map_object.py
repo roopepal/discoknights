@@ -14,7 +14,8 @@ class MapObject(object):
 		self.type = object_type
 		self.map = None
 		self.coordinates = None
-		
+
+
 	def added_to_map(self, mp, coordinates):
 		# Updates the object attributes when the object is added to a map.
 		self.map = mp

@@ -1,6 +1,5 @@
-import config_reader
+from config_reader import ConfigReader
 from constants import *
-from coordinates import Coordinates
 from menu import Menu, MenuOption, MenuOptionMapImage
 from event_handler import IntroEventHandler, GameEventHandler, MenuEventHandler
 import pygame, sys
@@ -26,37 +25,92 @@ class StateManager(object):
 		self.music = True
 		self.sound_effects = True
 		
-		# init config reader (reads config files)
-		self.config_reader = config_reader.ConfigReader()
+		# init config reader (reads config files for map and characters)
+		self.config_reader = ConfigReader()
 		
 		# count maps available
 		self.map_count = self.config_reader.count_available_maps()
 		
-		# init menu states
-		self.intro_screen = IntroScreenState(self)
-		self.main_menu = MainMenuState(self)
-		self.choose_map_menu = ChooseMapMenuState(self)
-		self.options_menu = OptionsMenuState(self)
-		self.sound_menu = SoundMenuState(self)
-		self.display_menu = DisplayMenuState(self)
-		self.credits = CreditsState(self)
-		
-		# init game state
-		self.game = None
+		# init states
+		self.init_states()
 		
 		# start program at intro screen
 		self.current_state = self.intro_screen
 		
 	
+	def init_states(self):
+		'''Initializes all states'''
+		
+		# Intro screen
+		self.intro_screen = IntroScreenState(self)
+		
+		# Game
+		self.game = None
+		
+		# Menus
+		self.main_menu = MenuState(self)
+		self.options_menu = MenuState(self)
+		self.sound_menu = MenuState(self)
+		self.display_menu = MenuState(self)
+		self.choose_map_menu = ChooseMapMenuState(self)
+		
+		# Credits
+		self.credits = CreditsState(self)
+		
+		# Add menu options
+		self.main_menu.add_option( "Resume Game", self.go_to_game, greyed=True )
+		self.main_menu.add_option( "New Game", self.go_to, self.choose_map_menu )
+		self.main_menu.add_option( "Options", self.go_to, self.options_menu )
+		self.main_menu.add_option( "Credits", self.go_to, self.credits )
+		self.main_menu.add_option( "Quit", self.quit )
+				
+		self.options_menu.add_option( "Sound", self.go_to, self.sound_menu )
+		self.options_menu.add_option( "Display", self.go_to, self.display_menu )
+		self.options_menu.add_option( "Back to Main Menu", self.go_to, self.main_menu )		
+		
+		self.sound_menu.add_option( "Music: ON", self.toggle_music )
+		self.sound_menu.add_option( "Effects: ON", self.toggle_sound_effects )
+		self.sound_menu.add_option( "Back to Options", self.go_to, self.options_menu )		
+		
+		self.display_menu.add_option( "Fullscreen: OFF", self.toggle_fullscreen )
+		self.display_menu.add_option( "Back to Options", self.go_to, self.options_menu )
+		
+		# set option positioning for the menus
+		for menu in [self.main_menu, self.options_menu, self.sound_menu, self.display_menu]:
+			menu.set_rects()
+
+	
 	def go_to(self, state):
 		# reset screen
 		self.reset_screen()
+		
 		# change state
 		self.current_state = state
-		# change music when entering game
-		if self.current_state == self.game and not self.game.running:
+		
+		# change music when entering game or menu
+		if state == self.game and not self.game.running:
 			self.game.running = True
 			self.play_music(GAME_MUSIC_PATH)
+			
+		# if no music and entered main menu, play intro music
+		elif not pygame.mixer.music.get_busy() and state == self.main_menu:
+			self.play_music(INTRO_MUSIC_PATH)
+			
+		# if entered credits state, reset credits text positioning
+		elif state == self.credits:
+			self.credits.reset_position()
+	
+	
+	def go_to_game(self):
+		# we need this in order to stay up-to-date on which game state object to reference, since 
+		# python is "call-by-object", and the game state object we want to reference changes
+		self.go_to(self.game)
+	
+	
+	def quit(self):
+		# quit program
+		pygame.quit()
+		sys.exit()
 			
 	
 	def reset_screen(self):
@@ -73,7 +127,19 @@ class StateManager(object):
 		screen.fill(BLACK)
 		
 		return screen
-		
+	
+	
+	def toggle_fullscreen(self):
+		# toggle fullscreen setting
+		if self.fullscreen:
+			self.fullscreen = False
+			self.display_menu.menu.options[0].text = "Fullscreen: OFF"
+		else:
+			self.fullscreen = True
+			self.display_menu.menu.options[0].text = "Fullscreen: ON"
+		# reset screen
+		self.reset_screen()
+	
 		
 	def play_music(self, file_path, loop=-1, new_volume=None):
 		
@@ -94,6 +160,26 @@ class StateManager(object):
 			pygame.mixer.music.play(loop)
 
 	
+	def toggle_music(self):
+		if self.music:
+			pygame.mixer.music.set_volume(0)
+			self.music = False
+			self.sound_menu.menu.options[0].text = "Music: OFF"
+		else:
+			pygame.mixer.music.set_volume(VOLUME)
+			self.music = True
+			self.sound_menu.menu.options[0].text = "Music: ON"
+
+
+	def toggle_sound_effects(self):
+		if self.sound_effects:
+			self.sound_effects = False
+			self.sound_menu.menu.options[1].text = "Effects: OFF"
+		else:
+			self.sound_effects = True
+			self.sound_menu.menu.options[1].text = "Effects: ON"
+	
+
 
 class State(object):
 	'''Super class for game states'''
@@ -105,15 +191,19 @@ class State(object):
 		# init screen
 		self.screen = self.state_mgr.reset_screen()
 	
+	
 	def handle_events(self):
 		for event in pygame.event.get():
 			self.event_handler.handle(event)
 	
+	
 	def update(self):
 		raise NotImplementedError
+	
 		
 	def draw(self):
 		raise NotImplementedError
+	
 		
 	def draw_cursor(self):
 		self.screen.blit(self.state_mgr.cursor, self.state_mgr.cursor_pos)
@@ -122,7 +212,9 @@ class State(object):
 
 class IntroScreenState(State):
 	'''Intro screen'''
+	
 	def __init__(self, state_mgr):
+		
 		State.__init__(self, state_mgr)
 		
 		# init event handler
@@ -167,13 +259,21 @@ class GameState(State):
 	'''Actual game'''
 
 	def __init__(self, state_mgr, map_index):
+		
 		State.__init__(self, state_mgr)
 		
 		# build map with config reader
 		self.map = self.state_mgr.config_reader.get_map(self, map_index)
 		
+		# check if the game is played with AI
+		self.played_with_ai = False
+		
+		for c in self.map.characters:
+			if c.ai:
+				self.played_with_ai = True
+		
 		# init event handler
-		self.event_handler = GameEventHandler(self, self.map)
+		self.event_handler = GameEventHandler(self)
 		
 		# start game
 		self.map.start_game()
@@ -183,28 +283,32 @@ class GameState(State):
 		
 	
 	def check_for_win(self):		
-		plr_characters_alive = 0
-		ai_characters_alive = 0
+		team1_alive = 0
+		team2_alive = 0
 		
 		# check all characters
 		for c in self.map.characters:
-			if not c.ai and not c.dead:
-				plr_characters_alive += 1
-			elif c.ai and not c.dead:
-				ai_characters_alive += 1
+			if c.team == 1 and not c.dead:
+				team1_alive += 1
+			elif c.team == 2 and not c.dead:
+				team2_alive += 1
 		
-		# recognize winner		
-		if plr_characters_alive == 0:
-			# AI won
-			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 2)
+		# init game over state
+		if team1_alive == 0:
+			# team 2 won
+			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 2, self.played_with_ai)
 
-		elif ai_characters_alive == 0:
-			# player won
-			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 1)
+		elif team2_alive == 0:
+			# team 1 won
+			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 1, self.played_with_ai)
 
-		if plr_characters_alive == 0 or ai_characters_alive == 0:
+		# go to game over state
+		if team1_alive == 0 or team2_alive == 0:
+			
 			self.state_mgr.go_to(self.state_mgr.game_over)
+			
 			self.running = False
+			
 			# disable "resume game" option
 			self.state_mgr.main_menu.menu.options[0].greyed = True
 	
@@ -215,10 +319,6 @@ class GameState(State):
 				
 		# update map and range indicators
 		self.map.view.update()
-		
-		# update characters
-		for character in self.map.characters:
-			character.view.update()
 			
 
 	def draw(self):
@@ -227,17 +327,6 @@ class GameState(State):
 		
 		# draw map and range indicators
 		self.map.view.draw()
-		
-		# draw characters and objects
-		for x in range(self.map.width):
-			for y in range(self.map.height):
-				square = self.map.square_at(Coordinates(x,y))
-				character = square.character
-				map_object = square.object 
-				if character and not character.dead:
-					character.view.draw()
-				if map_object:
-					map_object.view.draw()
 					
 		# draw action effect test
 		if self.map.view.effect_text:
@@ -251,61 +340,39 @@ class GameState(State):
 
 class MenuState(State):
 	'''Parent class for menus'''
+	
 	def __init__(self, state_mgr):
-		State.__init__(self, state_mgr)
 		
+		State.__init__(self, state_mgr)
 
 		# init menu
 		self.menu = Menu(self)
 
 		# init event handler
-		self.event_handler = MenuEventHandler(self, self.menu)
+		self.event_handler = MenuEventHandler(self)
 		
 		# load background image
 		self.bg = pygame.image.load(MENU_BACKGROUND_PATH).convert()
 		
+	
+	def add_option(self, text, function, func_parameter=None, greyed=False):
+		# add new option to the menu
+		new_menu_option = MenuOption(self.menu, text, function, func_parameter, greyed)
 		
+		self.menu.options.append(new_menu_option)
+	
+	
 	def set_rects(self):
 		# set option positioning
 		for option in self.menu.options:
 			option.set_rect()
-			
-		
-	def go_to_main_menu(self):
-		self.state_mgr.go_to(self.state_mgr.main_menu)
-		
-		# check if music is playing, otherwise play intro music
-		if not pygame.mixer.music.get_busy():
-			self.state_mgr.play_music(INTRO_MUSIC_PATH)
-	
-	def go_to_choose_map(self):
-		self.state_mgr.go_to(self.state_mgr.choose_map_menu)
-	
-	def go_to_options(self):
-		self.state_mgr.go_to(self.state_mgr.options_menu)
-		
-	def go_to_sound(self):
-		self.state_mgr.go_to(self.state_mgr.sound_menu)
-		
-	def go_to_display(self):
-		self.state_mgr.go_to(self.state_mgr.display_menu)
-		
-	def go_to_credits(self):
-		self.state_mgr.credits.reset_position()
-		self.state_mgr.go_to(self.state_mgr.credits)	
-		
-	def resume_game(self):
-		self.state_mgr.go_to(self.state_mgr.game)
-		
-	def quit(self):
-		pygame.quit()
-		sys.exit()
 		
 	
 	def update(self):
 		# update options
 		for option in self.menu.options:
 			option.update()
+	
 	
 	def draw(self):
 		# clear background
@@ -316,129 +383,11 @@ class MenuState(State):
 
 
 
-class MainMenuState(MenuState):
-	'''Main menu'''
-	def __init__(self, state_mgr):
-		# set name
-		self.name = "Main Menu"
-		
-		# parent class init
-		MenuState.__init__(self, state_mgr)
-		
-		# add menu options
-		self.menu.options.append( MenuOption(self.menu, "Resume Game", self.resume_game, greyed=True) )
-		self.menu.options.append( MenuOption(self.menu, "New Game", self.go_to_choose_map) )
-		self.menu.options.append( MenuOption(self.menu, "Options", self.go_to_options) )
-		self.menu.options.append( MenuOption(self.menu, "Credits", self.go_to_credits) )
-		self.menu.options.append( MenuOption(self.menu, "Quit", self.quit) )
-		
-		# set option positioning
-		self.set_rects()
-	
-
-	
-class OptionsMenuState(MenuState):
-	'''Options menu'''
-	def __init__(self, state_mgr):
-		# set name
-		self.name = "Options"
-		
-		# parent class init
-		MenuState.__init__(self, state_mgr)
-		
-		# add menu options
-		self.menu.options.append( MenuOption(self.menu, "Sound", self.go_to_sound) )
-		self.menu.options.append( MenuOption(self.menu, "Window", self.go_to_display) )
-		self.menu.options.append( MenuOption(self.menu, "Back to Main Menu", self.go_to_main_menu) )
-		
-		# set option positioning
-		self.set_rects()
-	
-	def go_to_sound_menu(self):
-		self.state_mgr.go_to(self.state_mgr.sound_menu)
-
-
-
-class SoundMenuState(MenuState):
-	'''Options menu'''
-	def __init__(self, state_mgr):
-		# set name
-		self.name = "Options"
-		
-		# parent class init
-		MenuState.__init__(self, state_mgr)
-		
-		# add menu options
-		self.menu.options.append( MenuOption(self.menu, "Music: ON", self.toggle_music) )
-		self.menu.options.append( MenuOption(self.menu, "Effects: ON", self.toggle_effects) )
-		self.menu.options.append( MenuOption(self.menu, "Back to Options", self.go_to_options) )
-		
-		# set option positioning
-		self.set_rects()
-		
-
-	def toggle_music(self):
-		if self.state_mgr.music:
-			pygame.mixer.music.set_volume(0)
-			self.state_mgr.music = False
-			self.menu.options[0].text = "Music: OFF"
-		else:
-			pygame.mixer.music.set_volume(VOLUME)
-			self.state_mgr.music = True
-			self.menu.options[0].text = "Music: ON"
-
-
-	def toggle_effects(self):
-		if self.state_mgr.sound_effects:
-			self.state_mgr.sound_effects = False
-			self.menu.options[1].text = "Effects: OFF"
-		else:
-			self.state_mgr.sound_effects = True
-			self.menu.options[1].text = "Effects: ON"
-
-
-
-class DisplayMenuState(MenuState):
-	'''Options menu'''
-	def __init__(self, state_mgr):
-		# set name
-		self.name = "Options"
-		
-		# parent class init
-		MenuState.__init__(self, state_mgr)
-		
-		# add menu options
-		self.menu.options.append( MenuOption(self.menu, "Fullscreen: OFF", self.toggle_fullscreen) )
-		self.menu.options.append( MenuOption(self.menu, "Back to Options", self.go_to_options) )
-		
-		# set sound toggles
-		self.music_on = True
-		self.effects_on = True
-		
-		# set option positioning
-		self.set_rects()
-		
-
-	def toggle_fullscreen(self):
-		# toggle fullscreen setting
-		if self.state_mgr.fullscreen:
-			self.state_mgr.fullscreen = False
-			self.menu.options[0].text = "Fullscreen: OFF"
-		else:
-			self.state_mgr.fullscreen = True
-			self.menu.options[0].text = "Fullscreen: ON"
-		# reset screen
-		self.state_mgr.reset_screen()
-
-
-
 class ChooseMapMenuState(MenuState):
 		'''Options menu'''
-		def __init__(self, state_mgr):
-			# set name
-			self.name = "Options"
 		
-			# parent class init
+		def __init__(self, state_mgr):
+		
 			MenuState.__init__(self, state_mgr)
 		
 			# add menu options
@@ -452,38 +401,48 @@ class ChooseMapMenuState(MenuState):
 				self.menu.options[i].set_rect()
 
 			### back to main menu option
-			self.menu.options.append( MenuOption(self.menu, "Back to Main Menu", self.go_to_main_menu) )
+			self.add_option( "Back to Main Menu", self.state_mgr.go_to, self.state_mgr.main_menu )
+			
 			###### init position and move downwards
 			self.menu.options[-1].set_rect()
 			self.menu.options[-1].rect.top = self.screen.get_rect().centery + 100
 			
 	
 		def start_game_with_map(self, map_index):
+			# update state manager game
 			self.state_mgr.game = GameState(self.state_mgr, map_index)
-			self.state_mgr.go_to(self.state_mgr.game)
+			
+			# go to game
+			self.state_mgr.go_to_game()
 			
 			
 
 class GameOverMenuState(MenuState):
 		'''Game over menu, shows the end result.'''
 		
-		def __init__(self, state_mgr, winner):
-			# set name
-			self.name = "Options"
+		def __init__(self, state_mgr, winner, played_with_ai):
 		
-			# parent class init
 			MenuState.__init__(self, state_mgr)
 		
 			# get game over banner image
 			self.image = pygame.image.load(GAME_OVER_BANNER_PATH).convert_alpha()
-			
-			# set text and music based on who own
-			if winner == 1:
-				self.text = "You Won!"
-				self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
+									
+			# set text and music based on who own and if game was played with AI
+			if played_with_ai:
+				if winner == 1:
+					self.text = "You Won!"
+					self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
+				else:
+					self.text = "You Lost!"
+					self.state_mgr.play_music(LOSE_MUSIC_PATH, loop=0)
+					
 			else:
-				self.text = "You Lost!"
-				self.state_mgr.play_music(LOSE_MUSIC_PATH, loop=0)
+				if winner == 1:
+					self.text = "Plr 1 Won!"
+					self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
+				else:
+					self.text = "Plr 2 won!"
+					self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
 				
 			# draw text
 			self.text = XXL_FONT.render(self.text, True, BLACK)
@@ -497,7 +456,7 @@ class GameOverMenuState(MenuState):
 			self.image_rect.top = self.screen.get_height() / 5
 			
 			# add back to main menu option
-			self.menu.options.append( MenuOption(self.menu, "Go to Main Menu", self.go_to_main_menu) )
+			self.add_option( "Back to Main Menu", self.state_mgr.go_to, self.state_mgr.main_menu )
 			
 			# set menu option positioning below the banner
 			self.menu.options[0].rect.centerx = self.screen.get_rect().centerx
@@ -520,7 +479,6 @@ class CreditsState(State):
 	
 	def __init__(self, state_mgr):
 		
-		# parent class init
 		State.__init__(self, state_mgr)
 		
 		# load background image

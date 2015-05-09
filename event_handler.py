@@ -52,19 +52,16 @@ class IntroEventHandler(EventHandler):
 
 
 class MenuEventHandler(EventHandler):
-	def __init__(self, state, menu):
+	def __init__(self, state):
 		EventHandler.__init__(self, state)
-		
-		# set menu
-		self.menu = menu
-		
-	
+
+
 	def handle_key(self, key):
 		pass
 		
 		
 	def handle_click(self, mouse_pos):
-		for option in self.menu.options:
+		for option in self.state.menu.options:
 
 			# if option was clicked
 			if option.rect.collidepoint(pygame.mouse.get_pos()):
@@ -82,7 +79,7 @@ class MenuEventHandler(EventHandler):
 				
 	
 	def handle_event(self, event):
-		for option in self.menu.options:
+		for option in self.state.menu.options:
 			
 			# if mouse is over the option
 			if option.rect.collidepoint(pygame.mouse.get_pos()):
@@ -96,12 +93,9 @@ class MenuEventHandler(EventHandler):
 
 class GameEventHandler(EventHandler):
 	
-	def __init__(self, state, mp):
+	def __init__(self, state):
 		
 		EventHandler.__init__(self, state)
-		
-		# set map
-		self.map = mp
 		
 		# selected action
 		self.selected_action = None
@@ -113,7 +107,7 @@ class GameEventHandler(EventHandler):
 		## movement
 		if event.type == AI_MOVE_EVENT:
 			# make move
-			self.map.turn_controller.ai_move()
+			self.state.map.turn_controller.ai_move()
 			
 			# zero timer
 			pygame.time.set_timer(AI_MOVE_EVENT, 0)
@@ -121,7 +115,7 @@ class GameEventHandler(EventHandler):
 		## actions	
 		elif event.type == AI_ACTION_EVENT:
 			# make move
-			self.map.turn_controller.ai_use_action()
+			self.state.map.turn_controller.ai_use_action()
 			
 			# zero timer
 			pygame.time.set_timer(AI_ACTION_EVENT, 0)
@@ -139,7 +133,7 @@ class GameEventHandler(EventHandler):
 	
 	def handle_click(self, mouse_pos):
 		# get current character
-		character = self.map.turn_controller.current_character
+		character = self.state.map.turn_controller.current_character
 		
 		# if character is not walking and it is not AI's turn
 		if not character.walking and not character.ai:
@@ -147,29 +141,34 @@ class GameEventHandler(EventHandler):
 			click_handled = False
 			
 			# recognize end turn button
-			if self.map.view.end_turn_btn.rect.collidepoint(mouse_pos):
+			if self.state.map.view.end_turn_btn.rect.collidepoint(mouse_pos):
 				character.end_turn()
 
 				# set event handling state
 				click_handled = True
 		
 			# recognize action buttons
-			for button in self.map.view.action_buttons:
+			for button in self.state.map.view.action_buttons:
 				if button.rect.collidepoint(mouse_pos):
 
 					# get action
-					action = character.actions[self.map.view.action_buttons.index(button)]
+					action = character.actions[self.state.map.view.action_buttons.index(button)]
 					self.selected_action = action
 				
 					# get action range
-					self.map.set_in_range(action.range, character.coordinates, \
+					self.state.map.set_in_range(action.range, character.coordinates, \
 										  ignore_characters=True, ignore_non_walkable=True)
 				
 					# update range on map view based on action type
 					if action.type == Action.DAMAGE or action.type == Action.STUN:
-						self.map.view.update_range = ATTACK_RANGE
+						self.state.map.view.update_range = ATTACK_RANGE
 					elif action.type == Action.HEAL:
-						self.map.view.update_range = HEAL_RANGE
+						self.state.map.view.update_range = HEAL_RANGE
+					elif action.type == Action.BUFF:
+						if action.strength >= 1:
+							self.state.map.view.update_range = HEAL_RANGE
+						elif action.strength < 1:
+							self.state.map.view.update_range = ATTACK_RANGE
 				
 					# update character turn state
 					character.has_moved = True
@@ -181,38 +180,39 @@ class GameEventHandler(EventHandler):
 			if not click_handled:
 
 				# account for map positioning on screen
-				mouse_x = mouse_pos[0] - self.map.view.rect.left - self.map.view.width / 2
-				mouse_y = mouse_pos[1] - self.map.view.rect.top
+				mouse_x = mouse_pos[0] - self.state.map.view.rect.left - self.state.map.view.draw_offset_x - TILE_W / 2
+				mouse_y = mouse_pos[1] - self.state.map.view.rect.top
 
 				# convert coordinates
 				map_x, map_y = screen_to_map(mouse_x, mouse_y)
+				
 				coordinates = Coordinates(map_x, map_y)
 				
 				# if character has not moved, i.e. should move now
 				if not character.has_moved:
 
 					# get shortest path to clicked square
-					self.map.set_in_range(character.range, character.coordinates)
-					path = character.get_shortest_path(coordinates)
+					self.state.map.set_in_range(character.range, character.coordinates)
+					path = self.state.map.get_shortest_path(character.coordinates, coordinates)
 			
 					# if path was found
 					if path:
 						character.walking, character.walk_path = True, path
 
 						# clear range indicators on map
-						self.map.in_range = []
-						self.map.view.update_range = MOVEMENT_RANGE
+						self.state.map.in_range = []
+						self.state.map.view.update_range = MOVEMENT_RANGE
 					else:
 						print("Out of range.")
 		
-				# if action was selected
+				# if action is waiting for target
 				elif self.selected_action:
 
 					# get square clicked
-					square = self.map.square_at(coordinates)
+					square = self.state.map.square_at(coordinates)
 
 					# if square is in range
-					if coordinates in self.map.in_range:
+					if coordinates in self.state.map.in_range:
 
 						# if there is a character in the square clicked
 						if square.character:
@@ -230,4 +230,3 @@ class GameEventHandler(EventHandler):
 
 							# end turn
 							character.end_turn()
-							print("Missed!")

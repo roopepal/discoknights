@@ -1,0 +1,169 @@
+DISCO KNIGHTS Config
+
+// Lines that start with two forward slashes are recognized as comments.
+
+// Use the short names (characters) for building the map.
+
+// Define the squares of the map inside curly braces, each row on its own line, and the closing brace on a new line.
+
+
+// Square types
+
+//------------------------------------------------------------------
+
+#Squaretype
+name: water
+short: w
+walkable: false
+sprite: water.gif
+
+#Squaretype
+name: grass
+short: g
+walkable: true
+sprite: grass.gif
+
+#Squaretype
+name: bridge_hor
+short: bh
+walkable: true
+sprite: bridge_hor.gif
+
+#Squaretype
+name: bridge_ver
+short: bv
+walkable: true
+sprite: bridge_ver.gif
+
+// Object types
+
+//------------------------------------------------------------------
+
+#Object
+name: rock
+short: r
+sprite: rock.gif
+offset_x: 0
+offset_y: -12
+
+#Object
+name: tree
+short: t
+sprite: tree.png
+offset_x: 0
+offset_y: -76
+
+
+
+// Maps
+//------------------------------------------------------------------
+
+#Map
+index: 1
+width: 12
+height: 12
+team1_start: {
+	1 4
+	1 5
+	1 6
+}
+team2_start: {
+	10 5
+	10 6
+	10 7
+}
+squares: {
+	w w w w w w w w w w w w
+	g g.t g g g w w g g g g.t g
+	g g g g g bh bh g g g g g
+	g g g g g w w g g g g g
+	g g g g g w w g g g g g
+	g g g g g bh bh g g g g g
+	g g g g g bh bh g g g g g
+	g g g g g w w g g g g g
+	g g g g g w w g g g g g
+	g g g g g bh bh g g g g g
+	g g.t g g g w w g g g g.t g
+	w w w w w w w w w w w w
+}
+
+#Map
+index: 2
+width: 12
+height: 12
+team1_start: {
+	2 4
+	2 5
+	2 6
+}
+team2_start: {
+	9 5
+	9 6
+	9 7
+}
+squares: {
+	w w g g g g g g g g w w
+	w w bv w w w w w w bv w w
+	w w g g g g bh g g g w w
+	w w g g.r g g w g g.r g w w
+	w w g g g g w g g g w w
+	w w g g g g g g g g w w
+	w w g g g g g g g g w w
+	w w g g g w g g g g w w
+	w w g g.r g w g g g.r g w w
+	w w g g g bh g g g g w w
+	w w bv w w w w w w bv w w
+	w w g g g g g g g g w w
+}
+
+#Map
+index: 3
+width: 12
+height: 12
+team1_start: {
+	1 4
+	1 5
+	1 6
+}
+team2_start: {
+	10 5
+	10 6
+	10 7
+}
+squares: {
+	g.t g g.t g g.t g g.t g g.t g g.t g
+	g g g g g g w g g g g g
+	g g g g g g bh g g g g g
+	g g g g g g w g g g g g
+	g g g g g g.r w g g g g g
+	g g g g g g g g g g g g
+	g g g g g g g g g g g g
+	g g g g g w g.r g g g g g
+	g g g g g w g g g g g g
+	g g g g g bh g g g g g g
+	g g g g g w g g g g g g
+	g g.t g g.t g g.t g g.t g g.t g g.t
+}
+
+#Map
+index: 4
+width: 13
+height: 7
+team1_start: {
+	2 2
+	2 3
+}
+team2_start: {
+	10 3
+	10 4
+}
+squares: {
+	g.t w w w w  w  g  bh g  w w w g.t
+	w   w w w w  w  bv w  bv w w w w
+	w   w g g g  g  g  w  g  g g w w
+	w   w g g g  g  g  g  g  g g w w
+	w   w g g g  w  g  g  g  g g w w
+	w   w w w bv w  bv w  w  w w w w
+	g.t w w w g  bh g  w  w  w w w w
+}
+

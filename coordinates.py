@@ -52,12 +52,14 @@ def map_to_screen(map_x, map_y):
 	
 def screen_to_map(screen_x, screen_y):
 	# convert isometric screen coordinates to map coordinates
-	# assuming origins are at the top
-	screen_x /= 2
-	map_x = (screen_y + screen_x)/(TILE_H)
-	map_y = (screen_y - screen_x)/(TILE_H)
+	map_x = (screen_y + screen_x / 2) / (TILE_H)
+	map_y = (screen_y - screen_x / 2) / (TILE_H)
 	if map_x < 0:
 		map_x -= 1
 	if map_y < 0:
 		map_y -= 1
+	
+	print(screen_x, screen_y)
+	print(map_x, map_y)
+		
 	return int(map_x), int(map_y)

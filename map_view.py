@@ -21,7 +21,7 @@ class MapView(object):
 		self.height = (self.map.width + self.map.height) * TILE_H / 2 + 8	# 8 is the 'thickness' of a square
 				
 		# set draw offset to center the map horizontally on the surface
-		self.draw_offset_x = self.width / 2 - TILE_W / 2
+		self.draw_offset_x = (self.map.height - 1) * TILE_W / 2 
 		
 		# initialize map base and range surfaces
 		self.squares_image = pygame.Surface( (self.width, self.height), pygame.SRCALPHA )
@@ -46,16 +46,13 @@ class MapView(object):
 		self.end_turn_btn.set_rect((self.screen.get_width() - self.end_turn_btn.rect.width - 7, self.screen.get_height() - self.end_turn_btn.rect.height - 7))
 		
 		# load character info backgrounds
-		self.char_info_bg = pygame.image.load(CHAR_INFO_BG_PATH).convert_alpha()
-		self.char_info_turn = pygame.image.load(CHAR_INFO_TURN_PATH).convert_alpha()
-		self.char_info_dead = pygame.image.load(CHAR_INFO_DEAD_PATH).convert_alpha()
+		self.load_char_info_backgrounds()
 		
 		# init character info update state
 		### name differs from the method to reveal the method outside also
 		self.update_char_info = False
 		
-		# init action effect text and trigger (action, target_coordinates)
-		self.trigger_effect_text = (None, None)
+		# init action effect text
 		self.effect_text = None
 		
 		# init large event text and trigger
@@ -66,6 +63,13 @@ class MapView(object):
 	def center_in_window(self):
 		# center the map view's rectangle in the window
 		self.rect.center = self.screen.get_rect().center
+	
+	
+	def load_char_info_backgrounds(self):
+		self.char_info_bg = pygame.image.load(CHAR_INFO_BG_PATH).convert_alpha()
+		self.char_info_turn = pygame.image.load(CHAR_INFO_TURN_PATH).convert_alpha()
+		self.char_info_stunned = pygame.image.load(CHAR_INFO_STUNNED_PATH).convert_alpha()
+		self.char_info_dead = pygame.image.load(CHAR_INFO_DEAD_PATH).convert_alpha()
 	
 	
 	def load_indicators(self):
@@ -140,7 +144,7 @@ class MapView(object):
 			button.set_rect((17, self.screen.get_height() - 94 + 26 * self.action_buttons.index(button)))
 		
 			# get text
-			text = action.name + " (" + str(action.strength) + ")"
+			text = action.name + " (" + str(action.strength * action.character.buff_multiplier) + ")"
 			text = S_FONT.render(text, False, BLACK)
 			# set position
 			text_pos = text.get_rect()
@@ -151,17 +155,19 @@ class MapView(object):
 	
 	def update_character_info(self):
 		# prepare surface to draw on
-		self.character_info_image = pygame.Surface((self.screen.get_width(), self.char_info_bg.get_height() + 7))
+		self.character_info_image = pygame.Surface((self.screen.get_width(), self.char_info_bg.get_height() + 7), pygame.SRCALPHA)
 		
-		# count player and AI characters
-		plr_count = 0
-		ai_count = 0
+		# count teams
+		team1_count = 0
+		team2_count = 0
 		
 		# get info for all characters
 		for character in self.map.characters:
 			# copy clean background
 			if character.dead:
 				background = self.char_info_dead.copy()
+			elif character.stunned > 0:
+				background = self.char_info_stunned.copy()	
 			elif character == self.map.turn_controller.current_character:
 				background = self.char_info_turn.copy()
 			else:
@@ -173,8 +179,8 @@ class MapView(object):
 			background.blit(head_image, (5,5), (8,5,24,24))
 
 			# get health text
-			text_line_1 = str(character.health) + "/"
-			text_line_2 = str(character.max_health)
+			text_line_1 = str(int(character.health)) + "/"
+			text_line_2 = str(int(character.max_health))
 
 			# render text lines on background in correct position
 			t1 = S_FONT.render(text_line_1, 1, BLACK)
@@ -189,69 +195,50 @@ class MapView(object):
 			background.blit(t2, t2_pos)
 
 			# blit in the correct position depending on if character is AI or not
-			if character.ai:
-				self.character_info_image.blit(background, (self.screen.get_width() - (ai_count+1) * 34 - 5, 7))
-				ai_count += 1
+			if character.team == 1:
+				self.character_info_image.blit(background, (7 + team1_count* 34, 7))
+				team1_count += 1
 			else:
-				self.character_info_image.blit(background, (7 + plr_count* 34, 7))
-				plr_count += 1
+				self.character_info_image.blit(background, (self.screen.get_width() - (team2_count+1) * 34 - 5, 7))
+				team2_count += 1
 				
 		# reset update state
 		self.update_char_info = False
+
+	
+	def trigger_effect_text(self, text, color, coordinates):
+		# draw text surface
+		self.effect_text = L_FONT.render(text, False, color)
+		
+		# convert target coordinates to screen
+		screen_x, screen_y = map_to_screen(coordinates.x, coordinates.y) 
+		
+		# set initial position, accounting for map position on screen
+		self.effect_text_rect = self.effect_text.get_rect()
+		
+		## position horizontally in the middle of the square
+		self.effect_text_rect.right = screen_x + self.rect.x + self.draw_offset_x + self.effect_text.get_width() / 2 + 32
+		
+		## position vertically above the square
+		self.effect_text_rect.top = screen_y + self.rect.y - 40
+		
+		# reset position and fade count
+		self.effect_count = 0
 	
 	
 	def update_effect_text(self):
-		# listen for trigger
-		if self.trigger_effect_text[0]:
-			action = self.trigger_effect_text[0]
-			target_map_coordinates = self.trigger_effect_text[1]
+		# if there is text, move it upwards
+		if self.effect_text:
+			
+			# move upward
+			self.effect_text_rect.move_ip(0,-1)
 
-			# reset
-			self.trigger_effect_text = (None, None)
-			
-			# determine action type
-			if action.type == Action.HEAL:
-				text = "+" + str(action.strength)
-				color = GREEN
-			else:
-				if action.type == Action.STUN:
-					text = "STUN"
-				else:
-					text = "-" + str(action.strength)
-				color = RED
-	
-			# draw text surface
-			self.effect_text = L_FONT.render(text, False, color)
-			
-			# convert target coordinates to screen
-			screen_x, screen_y = map_to_screen(target_map_coordinates.x, target_map_coordinates.y) 
-			# set initial position, accounting for map position on screen
-			self.effect_text_rect = self.effect_text.get_rect()
-			## position horizontally in the middle of the square
-			self.effect_text_rect.right = screen_x + self.rect.x + self.draw_offset_x + self.effect_text.get_width() / 2 + 32
-			## position vertically above the square
-			self.effect_text_rect.top = screen_y + self.rect.y - 40
-			
-			# reset position and fade count
-			self.effect_count = 0
-	
-		else:
-			if self.effect_text:
-				# get opacity based on count
-				if self.effect_count > 10:
-					opacity = 255 - 12 * self.effect_count
-				else:
-					opacity = 255
-				
-				# move upward
-				self.effect_text_rect.move_ip(0,-1)
-
-				# update count
-				self.effect_count += 1
-				# reset if count exceeded
-				if self.effect_count > 20:
-					self.effect_count = 0
-					self.effect_text = None
+			# update count
+			self.effect_count += 1
+			# reset if count exceeded
+			if self.effect_count > 20:
+				self.effect_count = 0
+				self.effect_text = None
 
 	
 	def update_event_text(self):
@@ -286,6 +273,10 @@ class MapView(object):
 		elif self.update_range == HEAL_RANGE:
 			self.draw_range(self.heal_range_ind)
 		
+		# update characters
+		for character in self.map.characters:
+			character.view.update()
+		
 		# update character info if it has changed
 		if self.update_char_info == True:
 			self.update_character_info()
@@ -307,6 +298,17 @@ class MapView(object):
 		# blit map and range
 		self.screen.blit(self.squares_image, self.rect)
 		self.screen.blit(self.range_image, self.rect)
+		
+		# blit characters and objects
+		for x in range(self.map.width):
+			for y in range(self.map.height):
+				square = self.map.square_at(Coordinates(x,y))
+				character = square.character
+				map_object = square.object 
+				if character and not character.dead:
+					character.view.draw()
+				if map_object:
+					map_object.view.draw()
 		
 		# blit character info
 		self.screen.blit(self.character_info_image, (0,0))
