@@ -7,13 +7,14 @@ from character import Character
 from coordinates import Coordinates
 import direction
 
-# can be used to get json representation of the config after reading
+# can be used to get json representation of the config after reading, uncomment lines 232-233
 import json
 
 class ConfigFileError(Exception):
 	'''Defines an exception that the config reader throws in case of a corrupted file.'''
 	
 	def __init__(self, message):
+		
 		super(ConfigFileError, self).__init__(message)
 
 
@@ -237,7 +238,7 @@ class ConfigReader(object):
 
 	
 	def build_map_base(self, state, map_config, map_index):
-		'''Build a map without characters from the given config dictionary.'''
+		'''Build a map without characters from the given config list.'''
 
 		# Check that map_config is a list
 		if not isinstance(map_config, list):
@@ -291,6 +292,16 @@ class ConfigReader(object):
 			# Build map squares and objects in squares
 			elif item["id"].lower() == "map" and int(item["index"]) == map_index:
 				print("Building map...")
+				
+				try:
+					if int(item["height"]) > 16 or int(item["width"]) > 16:
+						raise ConfigFileError("Incorrect map dimensions.")
+						 
+				except ConfigFileError:
+					raise ConfigFileError("There was a problem building map number {:}. Maximum map size is 16 by 16 squares.".format(item["index"])) 
+				
+				except:
+					raise ConfigFileError("There was a problem building map number {:}. Make sure the map dimensions are correctly specified.".format(item["index"]))
 				
 				# Try building based on the config file
 				try:
@@ -423,7 +434,7 @@ class ConfigReader(object):
 	
 	
 	def count_available_maps(self):
-		'''Returns a count of available maps.'''
+		'''Returns a count of available maps. Assumes that config has been read.'''
 		
 		count = 0
 		

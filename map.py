@@ -83,6 +83,13 @@ class Map(object):
 		# update character info
 		self.view.update_char_info = True
 		
+		# show "PLAY!" message
+		self.view.trigger_event_text("PLAY!", font=XXL_FONT)
+		
+		# if AI character is first in turn
+		if character.ai:
+			pygame.time.set_timer(AI_MOVE_EVENT, AI_DELAY)
+		
 	
 	def square_at(self, coordinates):
 		if self.contains_coordinates(coordinates):

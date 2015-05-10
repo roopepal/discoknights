@@ -4,10 +4,12 @@ from coordinates import Coordinates, map_to_screen, screen_to_map
 import pygame, sys
 
 class EventHandler(object):
+	
 	def __init__(self, state):
 		
 		# set program state
 		self.state = state
+			
 			
 	def handle(self, event):
 		# get mouse position
@@ -30,21 +32,32 @@ class EventHandler(object):
 		
 		else:
 			self.handle_event(event)
+			
+	
+	def handle_key(self, key):
+		raise NotImplementedError
+		
+	
+	def handle_click(self, mouse_pos):
+		raise NotImplementedError
+		
+	
+	def handle_event(self, event):
+		raise NotImplementedError
 
 
 
 class IntroEventHandler(EventHandler):
-	def __init__(self, state):
-		EventHandler.__init__(self, state)
 	
-	def skip(self):
-		self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
+	def __init__(self, state):
+	
+		super(IntroEventHandler, self).__init__(state)
 	
 	def handle_click(self, mouse_pos):
-		self.skip()
+		self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
 	
 	def handle_key(self, key):
-		self.skip()
+		self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
 		
 	def handle_event(self, event):
 		pass
@@ -52,8 +65,10 @@ class IntroEventHandler(EventHandler):
 
 
 class MenuEventHandler(EventHandler):
+	
 	def __init__(self, state):
-		EventHandler.__init__(self, state)
+	
+		super(MenuEventHandler, self).__init__(state)
 
 
 	def handle_key(self, key):
@@ -95,7 +110,7 @@ class GameEventHandler(EventHandler):
 	
 	def __init__(self, state):
 		
-		EventHandler.__init__(self, state)
+		super(GameEventHandler, self).__init__(state)
 		
 		# selected action
 		self.selected_action = None

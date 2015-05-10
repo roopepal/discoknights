@@ -139,16 +139,6 @@ class MenuOptionMapImage(MenuOption):
 		
 		## center text with the map image
 		self.rect.centerx = self.map_image_rect.centerx
-		
-	
-	def update(self):
-		# set image according to state
-		if self.hovered and not self.greyed:
-			self.image = self.hover_image
-		elif not self.greyed:
-			self.image = self.normal_image
-		else:
-			self.image = self.greyed_image
 	
 	
 	def draw(self):

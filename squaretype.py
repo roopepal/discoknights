@@ -25,18 +25,10 @@ class SquareType(object):
 			self.image = pygame.image.load( os.path.join(GRAPHICS_DIR, sprite) ).convert_alpha()
 		self.offset_y = 0
 	
-	def get_name(self):
-		return self.name
-			
-	def is_walkable(self):
-		if self.walkable:
-			return True
-		else:
-			return False
 	
 	def __eq__(self, obj):
 		return isinstance(obj, SquareType) and obj.get_name() == self.name
 	
+	
 	def __str__(self):
-		self.ret = "{:5}".format(self.name)
-		return self.ret
+		return self.name

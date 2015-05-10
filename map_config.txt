@@ -166,4 +166,3 @@ squares: {
 	w   w w w bv w  bv w  w  w w w w
 	g.t w w w g  bh g  w  w  w w w w
 }
-

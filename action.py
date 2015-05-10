@@ -10,6 +10,7 @@ class Action(object):
 	BUFF = 4
 	
 	def __init__(self, character, action_type, strength, action_range, name, sound=None):
+		
 		self.type = action_type
 		self.strength = strength
 		self.range = action_range
@@ -43,12 +44,12 @@ class Action(object):
 		else:
 			if self.type == Action.DAMAGE:
 				target_character.damage(self.strength * self.character.buff_multiplier)
-				effect_text = "-" + str(self.strength * self.character.buff_multiplier)
+				effect_text = "-" + str(int(self.strength * self.character.buff_multiplier))
 				color = RED
 				
 			elif self.type == Action.HEAL:
 				target_character.heal(self.strength * self.character.buff_multiplier)
-				effect_text = "+" + str(self.strength * self.character.buff_multiplier)
+				effect_text = "+" + str(int(self.strength * self.character.buff_multiplier))
 				color = GREEN
 				
 			elif self.type == Action.STUN:

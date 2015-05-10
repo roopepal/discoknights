@@ -158,16 +158,16 @@ move_range: 3
 facing: left
 is_ai: true
 stand_sprites: {
-	up: ai1_up.gif
-	down: ai1_down.gif
-	left: ai1_left.gif
-	right: ai1_right.gif
+	up: ai2_up.gif
+	down: ai2_down.gif
+	left: ai2_left.gif
+	right: ai2_right.gif
 }
 walk_sprites: {
-	up: ai1_walk1_up.gif, ai1_walk2_up.gif, ai1_walk3_up.gif, ai1_walk4_up.gif 
-	down: ai1_walk1_down.gif, ai1_walk2_down.gif, ai1_walk3_down.gif, ai1_walk4_down.gif
-	left: ai1_walk1_left.gif, ai1_walk2_left.gif, ai1_walk3_left.gif, ai1_walk4_left.gif
-	right: ai1_walk1_right.gif, ai1_walk2_right.gif, ai1_walk3_right.gif, ai1_walk4_right.gif
+	up: ai2_walk1_up.gif, ai2_walk2_up.gif, ai2_walk3_up.gif, ai2_walk4_up.gif 
+	down: ai2_walk1_down.gif, ai2_walk2_down.gif, ai2_walk3_down.gif, ai2_walk4_down.gif
+	left: ai2_walk1_left.gif, ai2_walk2_left.gif, ai2_walk3_left.gif, ai2_walk4_left.gif
+	right: ai2_walk1_right.gif, ai2_walk2_right.gif, ai2_walk3_right.gif, ai2_walk4_right.gif
 }
 
 #Action
@@ -231,6 +231,14 @@ strength: 20
 max_range: 1
 name: Poke
 sound: sword.ogg
+
+#Action
+character: E
+type: heal
+strength: 10
+max_range: 2
+name: Heal
+sound: heal.ogg
 
 //------------------------------------------------------------------
 

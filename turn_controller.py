@@ -4,7 +4,9 @@ import pygame
 
 
 class TurnController(object):
-	
+	'''
+	Defines a turn controller that deals turn in the game and initiates AI moves.
+	'''
 	def __init__(self, current_map):
 		
 		# set map
@@ -69,22 +71,7 @@ class TurnController(object):
 			# otherwise
 			else:	 
 				self.current_has_moved = False
-				ret = self.map.view.trigger_event_text = "Move or choose an action"
-
-		
-	def ai_use_action(self):
-		
-		action, target = self.ai.get_action()
-
-		# if got action, perform it
-		if action:
-			print(action.perform(target.coordinates))
-			
-			# end turn
-			self.current_character.end_turn()
-		else:
-			# end turn
-			self.current_character.end_turn()
+				ret = self.map.view.trigger_event_text("Move or choose an action")
 		
 		
 	def ai_move(self):
@@ -105,3 +92,25 @@ class TurnController(object):
 		else:
 			# post ai action event to the event queue
 			pygame.time.set_timer(AI_ACTION_EVENT, AI_DELAY)
+
+			
+	def ai_use_action(self):
+		
+		action, target = self.ai.get_action()
+
+		# if got action, perform it
+		if action:
+			
+			# set event text
+			event_text = action.name + "!"
+			self.current_character.map.view.trigger_event_text(event_text.title())
+			
+			# perform action
+			print(action.perform(target.coordinates))
+			
+			# end turn
+			self.current_character.end_turn()
+			
+		else:
+			# end turn
+			self.current_character.end_turn()

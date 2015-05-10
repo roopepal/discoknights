@@ -7,7 +7,8 @@ import pygame, sys
 
 
 class StateManager(object):
-	'''Manages the game state'''
+	'''Manages the program states.'''
+	
 	def __init__(self):
 		
 		# get default fullscreen setting
@@ -39,7 +40,7 @@ class StateManager(object):
 		
 	
 	def init_states(self):
-		'''Initializes all states'''
+		'''Initializes all states used in the program.'''
 		
 		# Intro screen
 		self.intro_screen = IntroScreenState(self)
@@ -117,12 +118,16 @@ class StateManager(object):
 		# check if display has been initialized
 		if not pygame.display.get_init():
 			pygame.init()
+		
 		# set caption
 		pygame.display.set_caption("Disco Knights")
+		
 		# set fullscreen flag
 		flag = self.fullscreen * pygame.FULLSCREEN
+		
 		# set screen, get fullscreen setting from constants
 		screen = pygame.display.set_mode( WINDOW_SIZE, flag )
+		
 		# fill with black
 		screen.fill(BLACK)
 		
@@ -215,7 +220,7 @@ class IntroScreenState(State):
 	
 	def __init__(self, state_mgr):
 		
-		State.__init__(self, state_mgr)
+		super(IntroScreenState, self).__init__(state_mgr)
 		
 		# init event handler
 		self.event_handler = IntroEventHandler(self)
@@ -256,21 +261,25 @@ class IntroScreenState(State):
 	
 
 class GameState(State):
-	'''Actual game'''
+	'''Defines the actual game state.'''
 
 	def __init__(self, state_mgr, map_index):
 		
-		State.__init__(self, state_mgr)
+		super(GameState, self).__init__(state_mgr)
 		
 		# build map with config reader
 		self.map = self.state_mgr.config_reader.get_map(self, map_index)
 		
-		# check if the game is played with AI
-		self.played_with_ai = False
+		# check if the teams are controlled by AI
+		self.team1_ai = False
+		self.team2_ai = False
 		
 		for c in self.map.characters:
 			if c.ai:
-				self.played_with_ai = True
+				if c.team == 1:
+					self.team1_ai = True
+				elif c.team == 2:
+					self.team2_ai = True
 		
 		# init event handler
 		self.event_handler = GameEventHandler(self)
@@ -296,11 +305,11 @@ class GameState(State):
 		# init game over state
 		if team1_alive == 0:
 			# team 2 won
-			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 2, self.played_with_ai)
+			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 2, self.team1_ai, self.team2_ai)
 
 		elif team2_alive == 0:
 			# team 1 won
-			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 1, self.played_with_ai)
+			self.state_mgr.game_over = GameOverMenuState(self.state_mgr, 1, self.team1_ai, self.team2_ai)
 
 		# go to game over state
 		if team1_alive == 0 or team2_alive == 0:
@@ -323,27 +332,19 @@ class GameState(State):
 
 	def draw(self):
 		# fill screen
-		self.screen.fill(BLACK)
+		self.screen.fill(GAME_BACKGROUND_COLOR)
 		
 		# draw map and range indicators
 		self.map.view.draw()
-					
-		# draw action effect test
-		if self.map.view.effect_text:
-			self.screen.blit(self.map.view.effect_text, self.map.view.effect_text_rect)
 		
-		# draw large event text
-		if self.map.view.event_text:
-			self.screen.blit(self.map.view.event_text, self.map.view.event_text_rect)
-
 
 
 class MenuState(State):
-	'''Parent class for menus'''
+	'''Defines a menu state.'''
 	
 	def __init__(self, state_mgr):
 		
-		State.__init__(self, state_mgr)
+		super(MenuState, self).__init__(state_mgr)
 
 		# init menu
 		self.menu = Menu(self)
@@ -388,7 +389,7 @@ class ChooseMapMenuState(MenuState):
 		
 		def __init__(self, state_mgr):
 		
-			MenuState.__init__(self, state_mgr)
+			super(ChooseMapMenuState, self).__init__(state_mgr)
 		
 			# add menu options
 			### maps
@@ -420,16 +421,24 @@ class ChooseMapMenuState(MenuState):
 class GameOverMenuState(MenuState):
 		'''Game over menu, shows the end result.'''
 		
-		def __init__(self, state_mgr, winner, played_with_ai):
+		def __init__(self, state_mgr, winner, team1_ai, team2_ai):
 		
-			MenuState.__init__(self, state_mgr)
+			super(GameOverMenuState, self).__init__(state_mgr)
 		
 			# get game over banner image
 			self.image = pygame.image.load(GAME_OVER_BANNER_PATH).convert_alpha()
 									
 			# set text and music based on who own and if game was played with AI
-			if played_with_ai:
+			if not team1_ai and team2_ai:
 				if winner == 1:
+					self.text = "You Won!"
+					self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
+				else:
+					self.text = "You Lost!"
+					self.state_mgr.play_music(LOSE_MUSIC_PATH, loop=0)
+			
+			elif team1_ai and not team2_ai:
+				if winner == 2:
 					self.text = "You Won!"
 					self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
 				else:
@@ -441,7 +450,7 @@ class GameOverMenuState(MenuState):
 					self.text = "Plr 1 Won!"
 					self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
 				else:
-					self.text = "Plr 2 won!"
+					self.text = "Plr 2 Won!"
 					self.state_mgr.play_music(VICTORY_MUSIC_PATH, loop=0)
 				
 			# draw text
@@ -479,7 +488,7 @@ class CreditsState(State):
 	
 	def __init__(self, state_mgr):
 		
-		State.__init__(self, state_mgr)
+		super(CreditsState, self).__init__(state_mgr)
 		
 		# load background image
 		self.bg = pygame.image.load(MENU_BACKGROUND_PATH).convert()

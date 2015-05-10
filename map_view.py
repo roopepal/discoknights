@@ -5,11 +5,10 @@ from ui import Button
 
 
 class MapView(object):
-	'''
-	Defines a view for the Map object.
-	'''
+	'''Defines a view for the Map object.'''
 	
 	def __init__(self, map_object):
+		
 		# set map
 		self.map = map_object
 		
@@ -55,8 +54,7 @@ class MapView(object):
 		# init action effect text
 		self.effect_text = None
 		
-		# init large event text and trigger
-		self.trigger_event_text = None
+		# init large event text
 		self.event_text = None
 		
 		
@@ -241,28 +239,29 @@ class MapView(object):
 				self.effect_text = None
 
 	
+	def trigger_event_text(self, text, font=XL_FONT):
+		
+		# draw text surface
+		self.event_text = font.render(text, False, WHITE)
+		
+		# set position in center above map
+		self.event_text_rect = self.event_text.get_rect()
+		self.event_text_rect.centerx = self.screen.get_rect().centerx
+		self.event_text_rect.top = self.screen.get_height() / 6
+		
+		# set time triggered
+		self.event_text_time = pygame.time.get_ticks()
+		
+	
 	def update_event_text(self):
-		# listen for trigger
-		if self.trigger_event_text:
-			# save trigger time
-			self.event_text_time = pygame.time.get_ticks()
-			# draw text surface
-			self.event_text = XL_FONT.render(self.trigger_event_text, True, WHITE)
-			# set position in center
-			self.event_text_rect = self.event_text.get_rect()
-			self.event_text_rect.centerx = self.screen.get_rect().centerx
-			self.event_text_rect.top = self.screen.get_height() / 6
-			# reset trigger
-			self.trigger_event_text = None
-		# show text for 1.5 seconds
-		elif self.event_text:
+		
+		# if there is a text to show
+		if self.event_text:
+			
+			# show for 1.5 seconds
 			if pygame.time.get_ticks() > self.event_text_time + 1500:
 				self.event_text = None
-	
-	
-	def move(self, delta_x, delta_y):
-		self.rect.move_ip(delta_x, delta_y)
-	
+			
 	
 	def update(self):
 		# update range if it has changed
@@ -315,11 +314,22 @@ class MapView(object):
 		
 		# bottom menu background
 		self.screen.blit(self.bottom_menu_bg, self.bottom_menu_bg.get_rect(bottomleft=self.screen.get_rect().bottomleft))
+		
 		# end turn button
 		self.end_turn_btn.draw()
+		
 		# action buttons
 		for btn in self.action_buttons:
 			btn.draw()
-		# action texts, first index surface, second index position
+		
+		# action texts, first index is surface, second index is position
 		for text in self.action_texts:
 			self.screen.blit(text[0], text[1])
+			
+		# draw possible action effect test
+		if self.map.view.effect_text:
+			self.screen.blit(self.map.view.effect_text, self.map.view.effect_text_rect)
+		
+		# draw possible large event text
+		if self.map.view.event_text:
+			self.screen.blit(self.map.view.event_text, self.map.view.event_text_rect)

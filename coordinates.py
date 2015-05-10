@@ -1,4 +1,4 @@
-from direction import x_step, y_step, get_directions
+from direction import *
 from constants import TILE_W, TILE_H
 
 class Coordinates(object):
@@ -11,28 +11,23 @@ class Coordinates(object):
 		self.y = y
 	
 	
-	def is_right_neighbor(self, coordinates):
-		return (coordinates.x - self.x == 1 and coordinates.y == self.y)
-	
-	
-	def is_left_neighbor(self, coordinates):
-		return (coordinates.x - self.x == -1 and coordinates.y == self.y)
-	
-	
-	def is_top_neighbor(self, coordinates):
-		return (coordinates.x == self.x and coordinates.y - self.y == -1)
-	
-	
-	def is_bottom_neighbor(self, coordinates):
-		return (coordinates.x == self.x and coordinates.y - self.y == 1)
-	
-	
 	def get_neighbor(self, direction):
 		return Coordinates(self.x + x_step(direction), self.y + y_step(direction))
 	
 	
 	def get_neighbors(self):
 		return [ self.get_neighbor(direction) for direction in get_directions() ]
+	
+	
+	def is_neighbor_at(self, coordinates, direction):
+		if direction == UP:
+			return (coordinates.x == self.x and coordinates.y - self.y == -1)
+		elif direction == DOWN:
+			return (coordinates.x == self.x and coordinates.y - self.y == 1)
+		elif direction == RIGHT:
+			return (coordinates.x - self.x == 1 and coordinates.y == self.y)
+		elif direction == LEFT:
+			return (coordinates.x - self.x == -1 and coordinates.y == self.y)
 	
 	
 	def __eq__(self, obj):
@@ -58,8 +53,5 @@ def screen_to_map(screen_x, screen_y):
 		map_x -= 1
 	if map_y < 0:
 		map_y -= 1
-	
-	print(screen_x, screen_y)
-	print(map_x, map_y)
 		
 	return int(map_x), int(map_y)

@@ -7,12 +7,11 @@ from queue import Queue
 
 
 class Character(object):
-	'''
-	Defines a game character.
-	'''
+	'''Defines a game character.'''
 	
 	def __init__(self, name, team, max_health, move_range, is_ai, stand_sprites, walk_sprites=None):
 		'''Constructs a new game character.'''
+		
 		self.name = name
 		self.team = team
 		self.coordinates = None
@@ -40,9 +39,9 @@ class Character(object):
 		self.walk_to = None
 	
 	
-	def added_to_map(self, current_map, coordinates, facing, init_view=True):
+	def added_to_map(self, mp, coordinates, facing, init_view=True):
 		# Updates the character's attributes when the character is added to a map.
-		self.map = current_map
+		self.map = mp
 		self.coordinates = coordinates
 		self.facing = facing
 		
@@ -59,6 +58,7 @@ class Character(object):
 	def damage(self, amount):
 		# Decreases the character's health points by the given amount.
 		self.health -= amount
+		
 		if self.health <= 0:
 			self.dead = True
 			self.health = 0
@@ -102,11 +102,6 @@ class Character(object):
 			self.facing = LEFT
 		elif coordinates.x > self.coordinates.x and coordinates.y == self.coordinates.y:
 			self.facing = RIGHT
-
-
-	def has_turn(self):
-		# Returns True if it is this character's turn.
-		return self.map.turn_controller.current_character == self
 	
 	
 	def end_turn(self):
@@ -164,7 +159,7 @@ class Character(object):
 		For command line use and testing.
 		'''
 
-		if not self.has_turn():
+		if not self == self.map.turn_controller.current_character:
 			print("It's not {:}'s turn.".format(self.name))
 			return False
 

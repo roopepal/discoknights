@@ -7,6 +7,7 @@ import pygame, os
 class CharacterView(object):
 	
 	def __init__(self, character):
+		
 		self.character = character
 		
 		# create dicts for images
@@ -14,8 +15,8 @@ class CharacterView(object):
 		self.walk_images = {}
 		
 		# position character in the center of the isometric tile
-		self.draw_offset_x = 13
-		self.draw_offset_y = -30
+		self.draw_offset_x = CHARACTER_OFFSET_X
+		self.draw_offset_y = CHARACTER_OFFSET_Y
 		
 		# load sprite images
 		# there is one standing sprite for each direction
@@ -98,13 +99,13 @@ class CharacterView(object):
 			step = self.character.walk_path[0]
 			
 			# set facing direction
-			if self.character.coordinates.is_top_neighbor(step):
+			if self.character.coordinates.is_neighbor_at(step, UP):
 				self.character.facing = UP
-			elif self.character.coordinates.is_right_neighbor(step):
+			elif self.character.coordinates.is_neighbor_at(step, RIGHT):
 				self.character.facing = RIGHT
-			elif self.character.coordinates.is_bottom_neighbor(step):
+			elif self.character.coordinates.is_neighbor_at(step, DOWN):
 				self.character.facing = DOWN
-			elif self.character.coordinates.is_left_neighbor(step):
+			elif self.character.coordinates.is_neighbor_at(step, LEFT):
 				self.character.facing = LEFT
 			
 			# set image
@@ -118,6 +119,8 @@ class CharacterView(object):
 			
 			# get target screen coordinates
 			target_x, target_y = map_to_screen(step.x, step.y)
+			
+			# add offsets to account for map positioning
 			target_x += self.character.map.view.rect.topleft[0] + self.character.map.view.draw_offset_x + self.character.view.draw_offset_x
 			target_y += self.character.map.view.rect.topleft[1] + self.character.view.draw_offset_y
 			
@@ -140,6 +143,10 @@ class CharacterView(object):
 					if self.character.ai:
 						# send event to event queue with timer
 						pygame.time.set_timer(AI_ACTION_EVENT, AI_DELAY)
+						
+					# if not AI, show hint to choose action or end turn
+					else:
+						self.character.map.view.trigger_event_text("Choose action or End turn")
 		
 		# if not walking
 		else:

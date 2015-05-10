@@ -2,9 +2,12 @@ from action import Action
 import random
 
 class Ai(object):	 
+	
 	def __init__(self, current_map):
+		
 		self.map = current_map
 		self.character = None
+
 
 	def get_target(self, get_team_member=False):
 		'''Chooses the target enemy player based on distance and health left.
@@ -117,8 +120,21 @@ class Ai(object):
 		
 
 		# Choose target with the minimum average rank
-		chosen_target = min(avg_ranks, key=avg_ranks.__getitem__)
+		#chosen_target = min(avg_ranks, key=avg_ranks.__getitem__)
+		chosen_target = None
 		
+		for char in avg_ranks:
+			# choose character if it has a lower average rank
+			if not chosen_target or avg_ranks[char] < avg_ranks[chosen_target]:
+				chosen_target = char
+
+			# if ranks are equal, choose the one that is closer
+			elif avg_ranks[char] == avg_ranks[chosen_target]:
+
+				if distances[char] < distances[chosen_target]:
+					chosen_target = char
+		
+
 		# Get path to the chosen target
 		chosen_target_path = self.map.get_shortest_path(self.character.coordinates, chosen_target.coordinates, ignore_range=True)
 				
@@ -151,11 +167,15 @@ class Ai(object):
 			target = self.get_target(get_team_member=True)[0]
 		else:
 			target = self.get_target()[0]
+				
+		# check that a target was received
+		if not target:
+			return False, False
 		
 		# get actions
 		actions = self.character.actions
 		
-		# if the character has no actions
+		# check that the character has actions
 		if len(actions) == 0:
 			return False, False
 		
@@ -183,7 +203,7 @@ class Ai(object):
 				
 					if furthest_action == None or action.range > furthest_action.range:
 						furthest_action = action
-		
+				
 		# check that there was a wanted type of action
 		if not furthest_action:
 			return False, False
@@ -210,6 +230,7 @@ class Ai(object):
 
 		highest_effect = None
 		highest_effect_action = None
+		effect = None
 		
 		# select team action if wanted
 		if team_action:
@@ -223,7 +244,7 @@ class Ai(object):
 					# if action has enough range
 					if action.range >= distance_to_target:
 			
-						if action.type == Action.HEAL:
+						if action.type == Action.HEAL and target.health < target.max_health:
 							random_term = random.normalvariate(0, 7.75)
 							effect = action.strength + random_term
 				
@@ -234,7 +255,7 @@ class Ai(object):
 							effect = 10 * action.strength + random_term
 					
 						# if damage is higher than for any action so far, select this action
-						if highest_effect == None or effect > highest_effect:
+						if effect and ( highest_effect == None or effect > highest_effect ):
 							highest_effect = effect
 							highest_effect_action = action
 		
@@ -283,11 +304,11 @@ class Ai(object):
 		attack_action, attack_action_target = self.choose_action()
 		
 		team_action, team_action_target = self.choose_action(team_action=True)		
-		
+				
 		# if both attacking and helping a teammate are possible
 		if attack_action and team_action:
 			is_aggressive = random.random()
-			
+						
 			# the AI is aggressive 80% of the time
 			if is_aggressive > 0.2:
 				return attack_action, attack_action_target
@@ -306,15 +327,3 @@ class Ai(object):
 		# if no action possible
 		else:
 			return False, False
-
-
-	def make_move(self):
-		'''Moves the current AI player towards its target. For command line use.'''
-		
-		target = self.get_next_move()
-				
-		if target:
-			self.character.move_to_coordinates(target)
-			print(str(self.character) + " moved to " + str(target))
-		
-		self.character.end_turn()
