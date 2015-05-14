@@ -4,7 +4,8 @@ class ObjectType(object):
 	'''
 	
 	def __init__(self, name, short, sprite_path, offset_x, offset_y):
-		'''Creates a new square type.'''
+		'''Constructor'''
+		
 		self.name = name
 		self.short = short
 		self.sprite_path = sprite_path

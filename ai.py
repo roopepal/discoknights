@@ -2,8 +2,12 @@ from action import Action
 import random
 
 class Ai(object):	 
+	'''
+	Defines the artificial intelligence that decides target characters and the action to use.
+	'''
 	
 	def __init__(self, current_map):
+		'''Constructor'''
 		
 		self.map = current_map
 		self.character = None
@@ -144,6 +148,7 @@ class Ai(object):
 
 	def get_next_move(self):
 		'''Returns the coordinates on the path to the target character up to the maximum movement range.'''
+		
 		self.character.target, steps = self.get_target()
 
 		if steps and len(steps) > 0:

@@ -4,9 +4,13 @@ if not pygame.display.get_init():
 	pygame.init()
 
 class Button(object):
-	hover = False
+	'''
+	An in-game UI button.
+	'''
 	
 	def __init__(self, map_view, normal_img_path, hover_img_path, push_img_path, text, font, font_color):
+		'''Constructor'''
+		
 		# set map view the button is on
 		self.map_view = map_view
 		
@@ -32,11 +36,14 @@ class Button(object):
 
 	
 	def set_rect(self, pos):
+		'''Sets the button position to given position on screen.'''
+		
 		self.rect.topleft = pos
 	
 	
 	def update(self):
-		# set image according to mouse state
+		'''Sets button image according to mouse state.'''
+		
 		if self.rect.collidepoint(pygame.mouse.get_pos()):
 			if pygame.mouse.get_pressed()[0]:
 				self.image = self.push_image
@@ -47,5 +54,6 @@ class Button(object):
 	
 	
 	def draw(self):
-		# draw button on screen
+		'''Draws the button on the screen.'''
+		
 		self.map_view.screen.blit(self.image, self.rect)

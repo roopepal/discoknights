@@ -4,6 +4,7 @@ class Square(object):
 	'''
 	
 	def __init__(self, coordinates, squaretype):
+		'''Constructor'''
 		
 		self.visited = False
 		self.finished = False
@@ -16,6 +17,8 @@ class Square(object):
 	
 	
 	def is_empty(self):
+		'''Returns True of False depending on if the square is empty.'''
+		
 		if (self.character == None or self.character.dead) and self.object == None:
 			return True
 		else:

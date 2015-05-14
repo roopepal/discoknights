@@ -7,15 +7,21 @@ class Coordinates(object):
 	'''
 	
 	def __init__(self, x, y):
+		'''Constructor'''
+		
 		self.x = x
 		self.y = y
 	
 	
 	def get_neighbor(self, direction):
+		'''Returns the neighbor coordinates (as Coordinates objects) in the given direction.'''
+		
 		return Coordinates(self.x + x_step(direction), self.y + y_step(direction))
 	
 	
 	def get_neighbors(self):
+		'''Returns the neighbor coordinates (as Coordinates objects) in all four directions.'''
+		
 		return [ self.get_neighbor(direction) for direction in get_directions() ]
 	
 	
@@ -31,6 +37,8 @@ class Coordinates(object):
 	
 	
 	def __eq__(self, obj):
+		'''Equality comparison based on x and y coordinate attributes.'''
+		
 		return self.x == obj.x and self.y == obj.y
 	
 	
@@ -39,14 +47,16 @@ class Coordinates(object):
 		
 
 def map_to_screen(map_x, map_y):
-	# convert map coordinates to isometric screen coordinates
+	'''Convert map coordinates to isometric screen coordinates.'''
+	
 	screen_x = (map_x - map_y) * (TILE_W / 2)
 	screen_y = (map_x + map_y) * (TILE_H / 2)
 	return screen_x, screen_y
 	
 	
 def screen_to_map(screen_x, screen_y):
-	# convert isometric screen coordinates to map coordinates
+	'''Convert isometric screen coordinates to map coordinates.'''
+	
 	map_x = (screen_y + screen_x / 2) / (TILE_H)
 	map_y = (screen_y - screen_x / 2) / (TILE_H)
 	if map_x < 0:

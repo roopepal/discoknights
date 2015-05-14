@@ -8,22 +8,23 @@ class MapObject(object):
 	'''
 	
 	def __init__(self, object_type):
-		'''
-		Creates a object on the map.
-		'''
+		'''Constructor'''
+		
 		self.type = object_type
 		self.map = None
 		self.coordinates = None
 
 
 	def added_to_map(self, mp, coordinates):
-		# Updates the object attributes when the object is added to a map.
+		'''Updates the object attributes when the object is added to a map.'''
+		
 		self.map = mp
 		self.coordinates = coordinates
 
 	
 	def set_view(self):
-		# initiate MapObjectView
+		'''Creates a MapObjectView for the object.'''
+		
 		self.view = MapObjectView(self)
 	
 
@@ -33,8 +34,12 @@ class MapObject(object):
 
 
 class MapObjectView(object):
+	'''
+	Defines a graphical view for the MapObject.
+	'''
 	
 	def __init__(self, map_object):
+		'''Constructor'''
 		
 		self.map_object = map_object
 		self.image = pygame.image.load( os.path.join(GRAPHICS_DIR, self.map_object.type.sprite_path) )
@@ -48,6 +53,7 @@ class MapObjectView(object):
 		
 		
 	def set_screen_pos(self):
+		'''Sets the position of the view to represent object position on map.'''
 		
 		# get position on map
 		map_pos = self.map_object.coordinates
@@ -68,4 +74,6 @@ class MapObjectView(object):
 		
 		
 	def draw(self):
+		'''Draws the map object on the screen.'''
+		
 		self.map_object.map.view.screen.blit(self.image, self.rect)

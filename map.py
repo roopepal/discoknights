@@ -16,6 +16,8 @@ class Map(object):
 	'''
 	
 	def __init__(self, state):
+		'''Constructor'''
+		
 		# set program state
 		self.state = state
 		
@@ -30,6 +32,8 @@ class Map(object):
 
 
 	def build_squares(self, height, width, squares_input, team1_start, team2_start, init_view=True):
+		'''Builds the map based on the given input.'''
+		
 		# set dimensions
 		self.height = height
 		self.width = width
@@ -72,6 +76,8 @@ class Map(object):
 			
 	
 	def start_game(self):
+		'''Starts the game and gives the turn to the first character.'''
+		
 		# update range
 		character = self.turn_controller.current_character
 		self.set_in_range(character.range, character.coordinates)
@@ -92,6 +98,8 @@ class Map(object):
 		
 	
 	def square_at(self, coordinates):
+		'''Returns the square at the given coordinates.'''
+		
 		if self.contains_coordinates(coordinates):
 			square = self.squares[coordinates.y][coordinates.x]
 			if square:
@@ -103,11 +111,15 @@ class Map(object):
 	
 	
 	def add_squaretype(self, squaretype):
+		'''Adds the square type if it does not exist yet.'''
+		
 		if not squaretype.short in self.squaretypes:
 			self.squaretypes[squaretype.short] = squaretype
 		 
 			
 	def add_object_type(self, object_type):
+		'''Adds the object type if it does not exist yet.'''
+		
 		if not object_type.short in self.object_types:
 			self.object_types[object_type.short] = object_type
 	 
@@ -260,7 +272,8 @@ class Map(object):
 
 
 	def get_simple_map(self):
-		# returns a simple command-line representation of the map as a string.
+		'''Returns a simple text representation of the map as a string.'''
+		
 		simple_map = ""
 		
 		for y in range(self.height):
@@ -282,7 +295,8 @@ class Map(object):
 
 
 	def get_range_count_map(self):
-		# returns a simple command-line representation of the map as a string.
+		'''Returns a text representation of the map range counts as a string.'''
+		
 		range_count_map = ""
 		
 		for y in range(self.height):

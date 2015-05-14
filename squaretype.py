@@ -8,14 +8,7 @@ class SquareType(object):
 	'''
 	
 	def __init__(self, name, short, walkable, sprite=None):
-		'''
-		Creates a new square type.
-		
-		@param self.name: (String) The name of the square type.
-		@param self.short: (String) A one-letter short name for the square type.
-		@param self.walkable: (Boolean) Whether a character walk into a square of this type.
-		@param self.sprite: (String) A path to the sprite file.
-		'''
+		'''Constructor'''
 		
 		self.name = name
 		self.short = short
@@ -27,6 +20,8 @@ class SquareType(object):
 	
 	
 	def __eq__(self, obj):
+		'''Equality check based on square type name.'''
+		
 		return isinstance(obj, SquareType) and obj.get_name() == self.name
 	
 	

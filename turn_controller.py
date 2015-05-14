@@ -7,7 +7,9 @@ class TurnController(object):
 	'''
 	Defines a turn controller that deals turn in the game and initiates AI moves.
 	'''
+	
 	def __init__(self, current_map):
+		'''Constructor'''
 		
 		# set map
 		self.map = current_map
@@ -43,6 +45,8 @@ class TurnController(object):
 
 
 	def next(self):
+		'''Moves on to the next turn.'''
+		
 		# update game state, including check for winner
 		self.map.state.update()
 		
@@ -75,6 +79,7 @@ class TurnController(object):
 		
 		
 	def ai_move(self):
+		'''Initializes AI movement with the defined constant AI delay.'''
 		
 		# get movement path
 		walk_path = self.ai.get_next_move()
@@ -95,6 +100,7 @@ class TurnController(object):
 
 			
 	def ai_use_action(self):
+		'''Initializes AI action with the defined constant AI delay.'''
 		
 		action, target = self.ai.get_action()
 

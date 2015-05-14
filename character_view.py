@@ -5,8 +5,12 @@ import pygame, os
 
 
 class CharacterView(object):
+	'''
+	Defines a graphical view for the Character.
+	'''
 	
 	def __init__(self, character):
+		'''Constructor'''
 		
 		self.character = character
 		
@@ -50,6 +54,8 @@ class CharacterView(object):
 	
 	
 	def set_screen_pos(self):
+		'''Sets the position of the view to the square the character is in.'''
+		
 		# get position on map
 		map_pos = self.character.coordinates
 		
@@ -69,6 +75,8 @@ class CharacterView(object):
 	
 	
 	def get_next_walk_frame(self):
+		'''Returns the next walk animation frame image.'''
+		
 		# get number of sprites
 		anim_len = len(self.walk_images[self.character.facing[1]])
 
@@ -91,6 +99,8 @@ class CharacterView(object):
 		
 	
 	def update(self):
+		'''Updates the image and the position of the view.'''
+		
 		if self.character.walking:
 			# set turn status to moved
 			self.character.has_moved = True
@@ -154,5 +164,7 @@ class CharacterView(object):
 						
 			
 	def draw(self):
+		'''Draws the view on the screen.'''
+		
 		self.character.map.view.screen.blit(self.image, self.rect)
 

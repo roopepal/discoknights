@@ -2,6 +2,9 @@ from constants import MUSIC_DIR, RED, GREEN
 import pygame, os
 
 class Action(object):
+	'''
+	Defines an action that characters can use.
+	'''
 	
 	# Action types
 	DAMAGE = 1
@@ -10,6 +13,7 @@ class Action(object):
 	BUFF = 4
 	
 	def __init__(self, character, action_type, strength, action_range, name, sound=None):
+		'''Constructor'''
 		
 		self.type = action_type
 		self.strength = strength
@@ -24,6 +28,8 @@ class Action(object):
 
 
 	def perform(self, target_coordinates):
+		'''Performs the action and triggers the effect text above the affected character.'''
+		
 		# Play action sound if sound effects are enabled and there is a sound
 		if self.sound and self.character.map.state.state_mgr.sound_effects:
 			self.sound.play()

@@ -10,7 +10,7 @@ class Character(object):
 	'''Defines a game character.'''
 	
 	def __init__(self, name, team, max_health, move_range, is_ai, stand_sprites, walk_sprites=None):
-		'''Constructs a new game character.'''
+		'''Constructor'''
 		
 		self.name = name
 		self.team = team
@@ -40,7 +40,8 @@ class Character(object):
 	
 	
 	def added_to_map(self, mp, coordinates, facing, init_view=True):
-		# Updates the character's attributes when the character is added to a map.
+		'''Updates the character's attributes when the character is added to a map.'''
+		
 		self.map = mp
 		self.coordinates = coordinates
 		self.facing = facing
@@ -51,12 +52,13 @@ class Character(object):
 		
 		
 	def set_view(self):
-		# initiate CharacterView
+		'''Sets a new CharacterView for the character.'''
 		self.view = CharacterView(self)
 
 
 	def damage(self, amount):
-		# Decreases the character's health points by the given amount.
+		'''Decreases the character's health points by the given amount.'''
+		
 		self.health -= amount
 		
 		if self.health <= 0:
@@ -66,34 +68,40 @@ class Character(object):
 
 	
 	def stun(self, turns):
-		# Stuns the character for the given amount of turns.
+		'''Stuns the character for the given amount of turns.'''
+		
 		self.stunned += turns
 
 		
 	def heal(self, amount):
-		# Increases the character's health points by the given amount, up to max health.
+		'''Increases the character's health points by the given amount, up to max health.'''
+		
 		self.health += amount
 		if self.health > self.max_health:
 			self.health = self.max_health
 	
 	
 	def buff(self, multiplier):
-		# Buffs the character's damage and heal actions for the next turn
+		'''Buffs the character's damage and heal actions for the next turn.'''
+		
 		self.buff_multiplier = multiplier
 		 
 	
 	def add_action(self, action_type, strength, action_range, name, sound=None):
-		# Adds an action that the character can perform.
+		'''Creates and adds an action that the character can perform.'''
+		
 		self.actions.append( Action(self, action_type, strength, action_range, name, sound) )
 	
 	
 	def turn_to_direction(self, direction):
-		# Changes the direction the character is facing to given direction.
+		'''Changes the direction the character is facing to given direction.'''
+		
 		self.facing = direction
 
 		
 	def turn_towards(self, coordinates):
-		# Changes the direction the character is facing towards given coordinates.
+		'''Changes the direction the character is facing towards given coordinates.'''
+		
 		if coordinates.x == self.coordinates.x and coordinates.y < self.coordinates.y:
 			self.facing = UP
 		elif coordinates.x == self.coordinates.x and coordinates.y > self.coordinates.y:
@@ -105,6 +113,8 @@ class Character(object):
 	
 	
 	def end_turn(self):
+		'''Ends the character's turn.'''
+		
 		# Reset move status
 		self.has_moved = False
 

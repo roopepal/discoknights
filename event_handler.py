@@ -4,14 +4,21 @@ from coordinates import Coordinates, map_to_screen, screen_to_map
 import pygame, sys
 
 class EventHandler(object):
+	'''
+	Defines and event handler that handles the Pygame events
+	such as mouse clicks and key presses.
+	'''
 	
 	def __init__(self, state):
+		'''Constructor'''
 		
 		# set program state
 		self.state = state
 			
 			
 	def handle(self, event):
+		'''Distributes events to specific handler methods and handles quit events.'''
+		
 		# get mouse position
 		mouse_pos = pygame.mouse.get_pos()
 		
@@ -48,16 +55,23 @@ class EventHandler(object):
 
 
 class IntroEventHandler(EventHandler):
+	'''
+	An event handler for the intro screen. Click or key press leads to main menu.
+	'''
+	
 	
 	def __init__(self, state):
 	
 		super(IntroEventHandler, self).__init__(state)
 	
+	
 	def handle_click(self, mouse_pos):
 		self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
 	
+	
 	def handle_key(self, key):
 		self.state.state_mgr.go_to(self.state.state_mgr.main_menu)
+	
 		
 	def handle_event(self, event):
 		pass
@@ -65,6 +79,10 @@ class IntroEventHandler(EventHandler):
 
 
 class MenuEventHandler(EventHandler):
+	'''
+	An event handler for the menu states. Recognizes clicks and
+	mouse hover over menu options.
+	'''
 	
 	def __init__(self, state):
 	
@@ -107,6 +125,12 @@ class MenuEventHandler(EventHandler):
 
 
 class GameEventHandler(EventHandler):
+	'''
+	An event handler for the game. Recognizes squares clicked and
+	controls the game accordingly. Triggers AI if a custom event
+	designated for AI is caught.
+	'''
+	
 	
 	def __init__(self, state):
 		
@@ -137,6 +161,7 @@ class GameEventHandler(EventHandler):
 	
 	
 	def handle_key(self, key):
+		
 		if key == pygame.K_ESCAPE:
 
 			# go to menu with ESC
@@ -147,6 +172,7 @@ class GameEventHandler(EventHandler):
 	
 	
 	def handle_click(self, mouse_pos):
+		
 		# get current character
 		character = self.state.map.turn_controller.current_character
 		

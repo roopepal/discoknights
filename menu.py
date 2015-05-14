@@ -1,8 +1,13 @@
 from constants import *
 
 class Menu(object):
+	'''
+	A menu that contains the menu options.
+	'''
 	
 	def __init__(self, state):
+		'''Constructor'''
+		
 		# set state
 		self.state = state
 		
@@ -14,8 +19,13 @@ class Menu(object):
 
 
 class MenuOption(object):
+	'''
+	A menu option with a function.
+	'''
 	
 	def __init__(self, menu, text, function=None, func_parameter=None, greyed=False):
+		'''Constructor'''
+		
 		# set parent menu
 		self.menu = menu
 		
@@ -41,13 +51,16 @@ class MenuOption(object):
 
 
 	def set_images(self):
-		# prepare normal and hover image
+		'''Prepare Surfaces from the text.'''
+		
 		self.normal_image = XL_FONT.render(self.text, 0, MENU_OPTION_COLOR)
 		self.hover_image = XL_FONT.render(self.text, 0, MENU_OPTION_HOVER_COLOR)
 		self.greyed_image = XL_FONT.render(self.text, 0, MENU_OPTION_GREYED_COLOR)
 		
 		
 	def set_rect(self):
+		'''Set menu option position based on option count in the parent menu.'''
+		
 		# get image rect
 		self.rect = self.image.get_rect()
 		
@@ -62,7 +75,9 @@ class MenuOption(object):
 
 	
 	def update(self):
-		# update images if needed
+		'''Updates the menu option images.'''
+		
+		# update text surfaces if needed
 		if self.update_text:
 			self.set_images()
 			
@@ -76,14 +91,21 @@ class MenuOption(object):
 			
 	
 	def draw(self):
+		'''Draws the menu option to the screen.'''
+		
 		self.menu.screen.blit(self.image, self.rect)
 		
 		
 
 class MenuOptionMapImage(MenuOption):
-	'''Defines a menu option with a picture of a map.'''
+	'''
+	Defines a menu option with a picture of a map.
+	'''
+	
 	def __init__(self, menu, text, function=None, func_parameter=None, greyed=False ):
-		MenuOption.__init__(self, menu, text, function, func_parameter, greyed)
+		'''Constructor'''
+		
+		super(MenuOptionMapImage, self).__init__(menu, text, function, func_parameter, greyed)
 		
 		# Build a picture of the map
 		## build the map with the config reader
@@ -113,6 +135,8 @@ class MenuOptionMapImage(MenuOption):
 		
 	
 	def set_rect(self):
+		'''Sets the position of the options based on the available map count.'''
+		
 		# map number
 		map_number = self.func_parameter
 		
@@ -142,5 +166,7 @@ class MenuOptionMapImage(MenuOption):
 	
 	
 	def draw(self):
+		'''Draws the text and image to the screen.'''
+		
 		self.menu.screen.blit(self.image, self.rect)
 		self.menu.screen.blit(self.map_image, self.map_image_rect)

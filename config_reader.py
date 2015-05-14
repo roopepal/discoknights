@@ -10,6 +10,7 @@ import direction
 # can be used to get json representation of the config after reading, uncomment lines 232-233
 import json
 
+
 class ConfigFileError(Exception):
 	'''Defines an exception that the config reader throws in case of a corrupted file.'''
 	

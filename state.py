@@ -7,9 +7,12 @@ import pygame, sys
 
 
 class StateManager(object):
-	'''Manages the program states.'''
+	'''
+	Manages the program states.
+	'''
 	
 	def __init__(self):
+		'''Constructor'''
 		
 		# get default fullscreen setting
 		self.fullscreen = FULLSCREEN
@@ -82,6 +85,8 @@ class StateManager(object):
 
 	
 	def go_to(self, state):
+		'''Sets the current state to the given state.'''
+		
 		# reset screen
 		self.reset_screen()
 		
@@ -103,18 +108,24 @@ class StateManager(object):
 	
 	
 	def go_to_game(self):
+		'''Sets the current state to the game state.'''
+		
 		# we need this in order to stay up-to-date on which game state object to reference, since 
 		# python is "call-by-object", and the game state object we want to reference changes
 		self.go_to(self.game)
 	
 	
 	def quit(self):
+		'''Exits the program safely.'''
+		
 		# quit program
 		pygame.quit()
 		sys.exit()
 			
 	
 	def reset_screen(self):
+		'''Returns a reset screen.'''
+		
 		# check if display has been initialized
 		if not pygame.display.get_init():
 			pygame.init()
@@ -135,6 +146,8 @@ class StateManager(object):
 	
 	
 	def toggle_fullscreen(self):
+		'''Toggles the fullscreen setting.'''
+		
 		# toggle fullscreen setting
 		if self.fullscreen:
 			self.fullscreen = False
@@ -147,6 +160,7 @@ class StateManager(object):
 	
 		
 	def play_music(self, file_path, loop=-1, new_volume=None):
+		'''Plays the music at the given path. Loops forever as default.'''
 		
 		# check for mixer
 		if not pygame.mixer.get_init():
@@ -166,6 +180,8 @@ class StateManager(object):
 
 	
 	def toggle_music(self):
+		'''Toggles music volume to zero and back.'''
+		
 		if self.music:
 			pygame.mixer.music.set_volume(0)
 			self.music = False
@@ -177,6 +193,8 @@ class StateManager(object):
 
 
 	def toggle_sound_effects(self):
+		'''Toggles sound effects on and off.'''
+		
 		if self.sound_effects:
 			self.sound_effects = False
 			self.sound_menu.menu.options[1].text = "Effects: OFF"
@@ -187,9 +205,13 @@ class StateManager(object):
 
 
 class State(object):
-	'''Super class for game states'''
+	'''
+	Super class for game states.
+	'''
 	
 	def __init__(self, state_mgr):
+		'''Constructor'''
+		
 		# set state manager
 		self.state_mgr = state_mgr
 		
@@ -198,6 +220,8 @@ class State(object):
 	
 	
 	def handle_events(self):
+		'''Asks the event handler to handle events.'''
+		
 		for event in pygame.event.get():
 			self.event_handler.handle(event)
 	
@@ -216,9 +240,12 @@ class State(object):
 
 
 class IntroScreenState(State):
-	'''Intro screen'''
+	'''
+	Intro screen state.
+	'''
 	
 	def __init__(self, state_mgr):
+		'''Constructor'''
 		
 		super(IntroScreenState, self).__init__(state_mgr)
 		
@@ -241,6 +268,8 @@ class IntroScreenState(State):
 	
 	
 	def toggle_image(self):
+		'''Toggles the text surfaces of different color.'''
+		
 		if self.image == self.text_image_white:
 			self.image = self.text_image_grey
 		else:
@@ -248,6 +277,8 @@ class IntroScreenState(State):
 	
 	
 	def update(self):
+		'''Changes text color every 0.5 seconds.'''
+		
 		# change image every half second
 		if pygame.time.get_ticks() > (self.timer + 500):
 			self.toggle_image()
@@ -255,15 +286,20 @@ class IntroScreenState(State):
 		
 	
 	def draw(self):
+		'''Draws the background and the text.'''
+		
 		self.screen.blit(self.bg, (0,0))
 		self.screen.blit(self.image, self.image.get_rect(center=self.screen.get_rect().center))
 	
 	
 
 class GameState(State):
-	'''Defines the actual game state.'''
+	'''
+	Defines the game state.
+	'''
 
 	def __init__(self, state_mgr, map_index):
+		'''Constructor'''
 		
 		super(GameState, self).__init__(state_mgr)
 		
@@ -291,7 +327,9 @@ class GameState(State):
 		self.running = False
 		
 	
-	def check_for_win(self):		
+	def check_for_win(self):
+		'''Checks for and handles game ending and recognizes the winner.'''
+			
 		team1_alive = 0
 		team2_alive = 0
 		
@@ -323,6 +361,8 @@ class GameState(State):
 	
 	
 	def update(self):
+		'''Updates the game state.'''
+		
 		# check for winner
 		self.check_for_win()
 				
@@ -331,6 +371,8 @@ class GameState(State):
 			
 
 	def draw(self):
+		'''Draws the game to the screen.'''
+		
 		# fill screen
 		self.screen.fill(GAME_BACKGROUND_COLOR)
 		
@@ -343,6 +385,7 @@ class MenuState(State):
 	'''Defines a menu state.'''
 	
 	def __init__(self, state_mgr):
+		'''Constructor'''
 		
 		super(MenuState, self).__init__(state_mgr)
 
@@ -357,25 +400,30 @@ class MenuState(State):
 		
 	
 	def add_option(self, text, function, func_parameter=None, greyed=False):
-		# add new option to the menu
+		'''Creates and adds a new option to the menu.'''
+		
 		new_menu_option = MenuOption(self.menu, text, function, func_parameter, greyed)
 		
 		self.menu.options.append(new_menu_option)
 	
 	
 	def set_rects(self):
-		# set option positioning
+		'''Sets option positioning.'''
+		
 		for option in self.menu.options:
 			option.set_rect()
 		
 	
 	def update(self):
-		# update options
+		'''Updates options.'''
+		
 		for option in self.menu.options:
 			option.update()
 	
 	
 	def draw(self):
+		'''Draws background and options to the screen.'''
+		
 		# clear background
 		self.menu.screen.blit(self.bg, (0,0))
 		# draw options
@@ -385,9 +433,12 @@ class MenuState(State):
 
 
 class ChooseMapMenuState(MenuState):
-		'''Options menu'''
+		'''
+		Map selection menu.
+		'''
 		
 		def __init__(self, state_mgr):
+			'''Constructor'''
 		
 			super(ChooseMapMenuState, self).__init__(state_mgr)
 		
@@ -410,6 +461,8 @@ class ChooseMapMenuState(MenuState):
 			
 	
 		def start_game_with_map(self, map_index):
+			'''Moves to the game state with the given map.'''
+			
 			# update state manager game
 			self.state_mgr.game = GameState(self.state_mgr, map_index)
 			
@@ -419,9 +472,12 @@ class ChooseMapMenuState(MenuState):
 			
 
 class GameOverMenuState(MenuState):
-		'''Game over menu, shows the end result.'''
+		'''
+		Game over menu, shows the end result.
+		'''
 		
 		def __init__(self, state_mgr, winner, team1_ai, team2_ai):
+			'''Constructor'''
 		
 			super(GameOverMenuState, self).__init__(state_mgr)
 		
@@ -473,6 +529,8 @@ class GameOverMenuState(MenuState):
 
 
 		def draw(self):
+			'''Draws the game over state to the screen.'''
+			
 			# draw background
 			self.screen.blit(self.bg, (0,0))
 			# draw banner
@@ -484,9 +542,12 @@ class GameOverMenuState(MenuState):
 				
 
 class CreditsState(State):
-	'''Scrolling credits.'''
+	'''
+	Scrolling credits.
+	'''
 	
 	def __init__(self, state_mgr):
+		'''Constructor'''
 		
 		super(CreditsState, self).__init__(state_mgr)
 		

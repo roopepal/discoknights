@@ -5,9 +5,12 @@ from ui import Button
 
 
 class MapView(object):
-	'''Defines a view for the Map object.'''
+	'''
+	Defines a graphical view for the Map.
+	'''
 	
 	def __init__(self, map_object):
+		'''Constructor'''
 		
 		# set map
 		self.map = map_object
@@ -59,11 +62,14 @@ class MapView(object):
 		
 		
 	def center_in_window(self):
-		# center the map view's rectangle in the window
+		'''Center the map view's rectangle in the window.'''
+		
 		self.rect.center = self.screen.get_rect().center
 	
 	
 	def load_char_info_backgrounds(self):
+		'''Loads the resources for the character info items.'''
+		
 		self.char_info_bg = pygame.image.load(CHAR_INFO_BG_PATH).convert_alpha()
 		self.char_info_turn = pygame.image.load(CHAR_INFO_TURN_PATH).convert_alpha()
 		self.char_info_stunned = pygame.image.load(CHAR_INFO_STUNNED_PATH).convert_alpha()
@@ -71,13 +77,16 @@ class MapView(object):
 	
 	
 	def load_indicators(self):
-		# load range indicator image
+		'''Loads range indicator image resources.'''
+		
 		self.move_range_ind = pygame.image.load(MOVE_RANGE_IND_PATH).convert_alpha()
 		self.attack_range_ind = pygame.image.load(ATTACK_RANGE_IND_PATH).convert_alpha()
 		self.heal_range_ind = pygame.image.load(HEAL_RANGE_IND_PATH).convert_alpha()
 	
 	
 	def load_bottom_menu_bg(self):
+		'''Loads and combines the bottom menu background image resources.'''
+		
 		# load a narrow background image for the bottom bar
 		bottom_bar_piece = pygame.image.load(BOTTOM_BAR_PATH).convert()
 		
@@ -102,6 +111,8 @@ class MapView(object):
 
 	
 	def draw_squares(self):
+		'''Draws a Surface of the squares.'''
+		
 		for x in range(self.map.width):
 			for y in range(self.map.height):
 				square = self.map.square_at( Coordinates(x,y) )
@@ -114,6 +125,8 @@ class MapView(object):
 				
 	
 	def draw_range(self, indicator):
+		'''Draws a surface of the range indicators.'''
+		
 		# clear range image
 		self.range_image.fill(0)
 		
@@ -129,6 +142,8 @@ class MapView(object):
 	
 	
 	def update_action_buttons(self):
+		'''Updates the action use buttons and texts to represent the current character.'''
+		
 		# separate buttons and texts for button handling
 		self.action_buttons = []
 		self.action_texts = []
@@ -152,6 +167,8 @@ class MapView(object):
 	
 	
 	def update_character_info(self):
+		'''Updates the character info items to represent the current situation.'''
+		
 		# prepare surface to draw on
 		self.character_info_image = pygame.Surface((self.screen.get_width(), self.char_info_bg.get_height() + 7), pygame.SRCALPHA)
 		
@@ -205,6 +222,8 @@ class MapView(object):
 
 	
 	def trigger_effect_text(self, text, color, coordinates):
+		'''Triggers the effect text above the wanted coordinates.'''
+		
 		# draw text surface
 		self.effect_text = L_FONT.render(text, False, color)
 		
@@ -225,6 +244,8 @@ class MapView(object):
 	
 	
 	def update_effect_text(self):
+		'''Updates the effect text position. Floats it upwards and removes it.'''
+		
 		# if there is text, move it upwards
 		if self.effect_text:
 			
@@ -240,6 +261,7 @@ class MapView(object):
 
 	
 	def trigger_event_text(self, text, font=XL_FONT):
+		'''Triggers the large event text displayed over the map.'''
 		
 		# draw text surface
 		self.event_text = font.render(text, False, WHITE)
@@ -254,6 +276,7 @@ class MapView(object):
 		
 	
 	def update_event_text(self):
+		'''Removes the large event text after 1.5 seconds.'''
 		
 		# if there is a text to show
 		if self.event_text:
@@ -264,6 +287,8 @@ class MapView(object):
 			
 	
 	def update(self):
+		'''Updates the view parts.'''
+		
 		# update range if it has changed
 		if self.update_range == MOVEMENT_RANGE:
 			self.draw_range(self.move_range_ind)
@@ -294,6 +319,8 @@ class MapView(object):
 	
 	
 	def draw(self):
+		'''Draws the view parts to the screen.'''
+		
 		# blit map and range
 		self.screen.blit(self.squares_image, self.rect)
 		self.screen.blit(self.range_image, self.rect)
